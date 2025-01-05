@@ -15,10 +15,10 @@ class dynamic_object : public game_object
     vec2 velocity;
     float mass;
 
-    bool isOnCeiling;
-	bool isOnFloor;
-	bool isOnWallLeft;
-	bool isOnWallRight;
+    bool is_on_ceiling;
+	bool is_on_floor;
+	bool is_on_wall_left;
+	bool is_on_wall_right;
 
     std::unordered_map<direction, dynamic_object*> adjacencies;
 };

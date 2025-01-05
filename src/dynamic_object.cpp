@@ -1,17 +1,18 @@
 #include "dynamic_object.h"
 #include <memory>
 
-dynamic_object::dynamic_object(aabb box, renderable* game_object_renderable) : game_object(box, game_object_renderable)
+dynamic_object::dynamic_object(aabb box, renderable* game_object_renderable) : game_object(box, game_object_renderable),
+                velocity(vec2::zero), mass(1)
 {
     reset();
 }
 
 void dynamic_object::reset()
 {
-    isOnCeiling = false;
-    isOnFloor = false;
-    isOnWallLeft = false;
-    isOnWallRight = false;
+    is_on_ceiling = false;
+    is_on_floor = false;
+    is_on_wall_left = false;
+    is_on_wall_right = false;
     adjacencies.clear();
 }
 
