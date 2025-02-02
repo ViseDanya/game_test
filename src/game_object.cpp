@@ -10,7 +10,7 @@ game_object::~game_object()
         delete game_object_renderable; 
     }
 };
-void game_object::render()
+void game_object::render() const
 {
     game_object_renderable->render(box);
 }

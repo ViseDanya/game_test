@@ -5,7 +5,7 @@ class color_renderable : public renderable
 {
     public:
     color_renderable(SDL_Color color);
-    void render(aabb box) override;
+    void render(aabb box) const override;
 
     SDL_Color color;
 };

@@ -4,5 +4,5 @@ class renderable
 {
     public:
     virtual ~renderable() = default;
-    virtual void render(aabb box) = 0;
+    virtual void render(aabb box) const = 0;
 };

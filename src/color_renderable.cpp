@@ -5,7 +5,7 @@
 
 color_renderable::color_renderable(SDL_Color color) : color(color){};
 
-void color_renderable::render(aabb box)
+void color_renderable::render(aabb box) const
 {
     SDL_FRect dest = {box.left(), WINDOW_HEIGHT - box.top(), box.size.x * 2, box.size.y * 2};
 	SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);

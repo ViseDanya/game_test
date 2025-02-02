@@ -24,6 +24,7 @@ set(MAIN_SOURCES
     "src/game_object.cpp"
     "src/platform.cpp"
     "src/player.cpp"
+    "src/Stage.cpp"
     "src/vec2.cpp"
     "src/main.cpp"
     )
@@ -39,7 +40,7 @@ add_executable(server ${SERVER_SOURCES})
 target_link_libraries(server PRIVATE ${ENET_LIBRARIES})
 
 set(CLIENT_SOURCES
-    "src/client.cpp"
+    "src/Client.cpp"
     )
 
 add_executable(client ${CLIENT_SOURCES})
