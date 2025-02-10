@@ -1,7 +1,7 @@
 #include "dynamic_object.h"
 #include <memory>
 
-dynamic_object::dynamic_object(aabb box, renderable* game_object_renderable) : game_object(box, game_object_renderable),
+dynamic_object::dynamic_object(const aabb& box) : game_object(box),
                 velocity(vec2::zero), mass(1)
 {
     reset();

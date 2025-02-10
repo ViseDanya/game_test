@@ -7,7 +7,8 @@ enum direction { UP, DOWN, LEFT, RIGHT};
 class dynamic_object : public game_object
 {
     public:
-    dynamic_object(aabb box, renderable* game_object_renderable);
+    dynamic_object() = default;
+    dynamic_object(const aabb& box);
     virtual ~dynamic_object() = default;
     std::vector<dynamic_object*> get_adjacency_list(direction dir);
     void reset();

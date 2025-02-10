@@ -3,15 +3,13 @@
 #include "aabb.h"
 #include "SDL3/SDL.h"
 
-class renderable;
+class Renderer;
 
 class game_object
 {
 public:
-    game_object(aabb box, renderable* game_object_renderable);
-    virtual ~game_object();
-    void render() const;
+    game_object() = default;
+    game_object(const aabb& box);
 
     aabb box;
-    renderable* game_object_renderable;
 };

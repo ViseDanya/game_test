@@ -3,5 +3,5 @@
 class platform : public game_object
 {
     public:
-    platform(vec2 position);
+    platform(const vec2& position);
 };

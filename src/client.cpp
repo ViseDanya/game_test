@@ -1,16 +1,6 @@
 #include "Client.hpp"
 #include <iostream>
 
-int main (int argc, char ** argv) 
-{
-    if (enet_initialize() != 0)
-    {
-        std::cerr << "An error occurred while initializing ENet." << std::endl;
-        return EXIT_FAILURE;
-    }
-    atexit (enet_deinitialize);
-}
-
 Client::Client() : enetClient(nullptr)
 {
     enetClient = enet_host_create (NULL /* create a client host */,

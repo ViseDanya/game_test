@@ -1,4 +1,3 @@
-#include "Message.h"
 #include <enet/enet.h>
 
 class Client

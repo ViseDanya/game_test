@@ -1,5 +1,5 @@
 #include "Stage.hpp"
-#include "player.h"
+#include "Player.h"
 #include "platform.h"
 #include "constants.h"
 
@@ -13,7 +13,7 @@ Stage::~Stage()
 {
 }
 
-void Stage::addPlayer(player* p)
+void Stage::addPlayer(Player* p)
 {
     players.push_back(p);
 }
@@ -23,7 +23,7 @@ void Stage::addPlatform(platform* p)
     platforms.push_back(p);
 }
 
-const std::vector<player*>& Stage::getPlayers() const
+const std::vector<Player*>& Stage::getPlayers() const
 {
     return players;
 }
@@ -254,7 +254,7 @@ void Stage::CollideDynamicWithDynamicHorizontal()
 
 void Stage::CollidePlayers()
 {
-  for(player* p : players)
+  for(Player* p : players)
   {
     p->reset();
     p->box.center += p->velocity.y * 1.f/FPS * vec2::up;
@@ -263,7 +263,7 @@ void Stage::CollidePlayers()
   CollideDynamicWithDynamicVertical();
   CollideDynamicWithStaticVertical();
 
-  for(player* p : players)
+  for(Player* p : players)
   {
     p->box.center += p->velocity.x * 1.f/FPS * vec2::right;
   }

@@ -5,14 +5,27 @@
 #include "imgui_impl_sdlrenderer3.h"
 
 #include "constants.h"
-#include "player.h"
+#include "Player.h"
 #include "platform.h"
 #include "Stage.hpp"
+#include "Client.hpp"
+#include "ColorRenderer.h"
+#include "PlayerInputController.h"
+#include <iostream>
 
 SDL_Window* window = nullptr;
 SDL_Renderer* renderer = nullptr;
 
 static bool gravity_enabled = false;
+
+void Init_Enet()
+{
+  if (enet_initialize() != 0)
+  {
+      std::cerr << "An error occurred while initializing ENet." << std::endl;
+  }
+  atexit (enet_deinitialize);
+}
 
 void Init_SDL()
 {
@@ -79,21 +92,25 @@ int main(int argc, char *argv[])
 {
   Init_SDL();
   Init_ImGui();
-
+  Init_Enet();
   bool quit = false;
   SDL_Event event;
 
-  player p1(vec2(WINDOW_WIDTH/2, WINDOW_HEIGHT/2));
-  p1.left_key = SDL_SCANCODE_A;
-  p1.right_key = SDL_SCANCODE_D;
-  p1.up_key = SDL_SCANCODE_W;
-  p1.down_key = SDL_SCANCODE_S;
+  Player p1(vec2(WINDOW_WIDTH/2, WINDOW_HEIGHT/2));
 
-  player p2(vec2(WINDOW_WIDTH/4, WINDOW_HEIGHT/4));
-  p2.left_key = SDL_SCANCODE_LEFT;
-  p2.right_key = SDL_SCANCODE_RIGHT;
-  p2.up_key = SDL_SCANCODE_UP;
-  p2.down_key = SDL_SCANCODE_DOWN;
+  PlayerInputController playerOneController(p1);
+  playerOneController.left_key = SDL_SCANCODE_A;
+  playerOneController.right_key = SDL_SCANCODE_D;
+  playerOneController.up_key = SDL_SCANCODE_W;
+  playerOneController.down_key = SDL_SCANCODE_S;
+
+  Player p2(vec2(WINDOW_WIDTH/4, WINDOW_HEIGHT/4));
+
+  PlayerInputController playerTwoController(p2);
+  playerTwoController.left_key = SDL_SCANCODE_LEFT;
+  playerTwoController.right_key = SDL_SCANCODE_RIGHT;
+  playerTwoController.up_key = SDL_SCANCODE_UP;
+  playerTwoController.down_key = SDL_SCANCODE_DOWN;
 
   Stage stage;
   stage.addPlayer(&p1);
@@ -102,7 +119,7 @@ int main(int argc, char *argv[])
   platform pform(vec2(WINDOW_WIDTH/2, WINDOW_HEIGHT/2 - PLAYER_HEIGHT * 2));
   stage.addPlatform(&pform);
 
-  bool gravity = false;
+  ColorRenderer debugRenderer;
 
   while (!quit)
   {
@@ -117,7 +134,11 @@ int main(int argc, char *argv[])
     }
 
     const bool *keystate = SDL_GetKeyboardState(nullptr);
-    std::for_each(stage.getPlayers().cbegin(), stage.getPlayers().cend(), [&](player* p){p->process_input(keystate, gravity_enabled);});
+
+    playerOneController.gravity_enabled = gravity_enabled;
+    playerOneController.ProcessInput(keystate);
+    playerTwoController.gravity_enabled = gravity_enabled;
+    playerTwoController.ProcessInput(keystate);
 
     stage.CollidePlayers();
 
@@ -125,13 +146,17 @@ int main(int argc, char *argv[])
     SDL_RenderClear(renderer);
 
     Show_ImGui();
-    for(const player* p : stage.getPlayers())
-    {
-      p->render();
-    }
+
+    debugRenderer.color = PLAYER_ONE_COLOR;
+    debugRenderer.render(p1.box);
+
+    debugRenderer.color = PLAYER_TWO_COLOR;
+    debugRenderer.render(p2.box);
+
+    debugRenderer.color = PLATFORM_COLOR;
     for(const platform* p : stage.getPlatforms())
     {
-      p->render();
+      debugRenderer.render(p->box);
     }
 
     SDL_RenderPresent(renderer);
@@ -143,6 +168,11 @@ int main(int argc, char *argv[])
       SDL_Delay(1000/FPS - elapsedTime);
     }
   }
+
+  // Client client;
+  // client.ConnectToServer("localhost");
+
+  // SDL_Delay(5000);
 
   Cleanup();
 }

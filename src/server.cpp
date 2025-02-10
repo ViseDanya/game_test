@@ -33,6 +33,8 @@ if (server == NULL)
     exit (EXIT_FAILURE);
 }
 
+while(true)
+{
 ENetEvent event;
  
 /* Wait up to 1000 milliseconds for an event. */
@@ -69,6 +71,7 @@ while (enet_host_service (server, & event, 1000) > 0)
  
         event.peer -> data = NULL;
     }
+}
 }
 
 enet_host_destroy(server);

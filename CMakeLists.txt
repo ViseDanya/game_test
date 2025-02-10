@@ -19,14 +19,16 @@ file(GLOB IMGUI_SOURCES
 set(MAIN_SOURCES
     ${IMGUI_SOURCES}
     "src/aabb.cpp"
-    "src/color_renderable.cpp"
+    "src/ColorRenderer.cpp"
     "src/dynamic_object.cpp"
     "src/game_object.cpp"
     "src/platform.cpp"
-    "src/player.cpp"
+    "src/Player.cpp"
+    "src/PlayerInputController.cpp"
     "src/Stage.cpp"
     "src/vec2.cpp"
     "src/main.cpp"
+    "src/Client.cpp"
     )
 
 add_executable(main ${MAIN_SOURCES})
@@ -38,11 +40,4 @@ set(SERVER_SOURCES
 
 add_executable(server ${SERVER_SOURCES})
 target_link_libraries(server PRIVATE ${ENET_LIBRARIES})
-
-set(CLIENT_SOURCES
-    "src/Client.cpp"
-    )
-
-add_executable(client ${CLIENT_SOURCES})
-target_link_libraries(client PRIVATE ${ENET_LIBRARIES})
 

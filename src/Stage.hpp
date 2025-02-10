@@ -1,6 +1,6 @@
 #include <vector>
 
-class player;
+class Player;
 class platform;
 
 class Stage
@@ -9,9 +9,9 @@ class Stage
     Stage();
     ~Stage();
 
-    void addPlayer(player* p);
+    void addPlayer(Player* p);
     void addPlatform(platform* p);
-    const std::vector<player*>& getPlayers() const;
+    const std::vector<Player*>& getPlayers() const;
     const std::vector<platform*>& getPlatforms() const;
     void CollidePlayers();
 
@@ -21,6 +21,6 @@ class Stage
     void CollideDynamicWithDynamicVertical();
     void CollideDynamicWithDynamicHorizontal();
 
-    std::vector<player*> players;
+    std::vector<Player*> players;
     std::vector<platform*> platforms;
 };
