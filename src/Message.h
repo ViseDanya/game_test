@@ -1,22 +1,22 @@
 #pragma once
 
-#include <cstdint>
-#include <string.h>
+#include "StreamBuffer.h"
 
 enum MessageType
 {
     PLAYER_DATA
 };
 
-struct PlayerData
+struct PlayerPositionMessage
 {
     float x;
     float y;
 };
 
-void CreatePlayerMessage(const PlayerData& playerData, uint8_t* data)
+std::vector<std::byte> GetPlayerMessageAsBytes(const PlayerPositionMessage& playerData)
 {
-    MessageType type = PLAYER_DATA;
-    memcpy(data, (uint8_t*)&type, sizeof(MessageType));
-    memcpy(data+sizeof(MessageType), (uint8_t*)&playerData, sizeof(playerData));
+    std::vector<std::byte> buffer;
+    StreamBuffer stream(buffer);
+    stream.write(playerData);
+    return buffer;
 }

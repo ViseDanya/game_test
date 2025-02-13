@@ -5,12 +5,14 @@
 #include "imgui_impl_sdlrenderer3.h"
 
 #include "constants.h"
+#include "Draw.h"
 #include "Player.h"
 #include "platform.h"
 #include "Stage.hpp"
 #include "Client.hpp"
 #include "ColorRenderer.h"
 #include "PlayerInputController.h"
+#include "TextureManager.h"
 #include <iostream>
 
 SDL_Window* window = nullptr;
@@ -93,6 +95,12 @@ int main(int argc, char *argv[])
   Init_SDL();
   Init_ImGui();
   Init_Enet();
+  
+  TextureManager textureManager(renderer);
+  textureManager.loadAllTextures();
+
+  Draw drawer(renderer);
+
   bool quit = false;
   SDL_Event event;
 
@@ -119,7 +127,7 @@ int main(int argc, char *argv[])
   platform pform(vec2(WINDOW_WIDTH/2, WINDOW_HEIGHT/2 - PLAYER_HEIGHT * 2));
   stage.addPlatform(&pform);
 
-  ColorRenderer debugRenderer;
+  // ColorRenderer debugRenderer;
 
   while (!quit)
   {
@@ -147,16 +155,24 @@ int main(int argc, char *argv[])
 
     Show_ImGui();
 
-    debugRenderer.color = PLAYER_ONE_COLOR;
-    debugRenderer.render(p1.box);
+    // debugRenderer.color = PLAYER_ONE_COLOR;
+    // debugRenderer.render(p1.box);
 
-    debugRenderer.color = PLAYER_TWO_COLOR;
-    debugRenderer.render(p2.box);
+    // debugRenderer.color = PLAYER_TWO_COLOR;
+    // debugRenderer.render(p2.box);
 
-    debugRenderer.color = PLATFORM_COLOR;
+    // debugRenderer.color = PLATFORM_COLOR;
+    // for(const platform* p : stage.getPlatforms())
+    // {
+    //   debugRenderer.render(p->box);
+    // }
+
+    drawer.renderColoredRectangle(PLAYER_ONE_COLOR, p1.box);
+    drawer.renderColoredRectangle(PLAYER_TWO_COLOR, p2.box);
+
     for(const platform* p : stage.getPlatforms())
     {
-      debugRenderer.render(p->box);
+      drawer.renderTexture(textureManager.normalTexture, p->box);
     }
 
     SDL_RenderPresent(renderer);
@@ -171,6 +187,7 @@ int main(int argc, char *argv[])
 
   // Client client;
   // client.ConnectToServer("localhost");
+  // PlayerPo
 
   // SDL_Delay(5000);
 
