@@ -111,6 +111,38 @@ struct InputControllerE
     bool gravity_enabled;
 };
 
+struct Sprite
+{
+    SDL_Texture* texture;
+};
+
+struct Mass
+{
+    float mass;
+};
+
+struct Adjacencies
+{
+    bool is_on_ceiling;
+    bool is_on_floor;
+    bool is_on_wall_left;
+    bool is_on_wall_right;
+    std::unordered_map<direction, entt::entity> adjacencies;
+
+    std::vector<entt::entity> get_adjacency_list(entt::registry& registry, direction dir)
+    {
+        std::vector<entt::entity> adjacency_list;
+        std::unordered_map<direction, entt::entity> currentAdjacencies = adjacencies;
+        while(currentAdjacencies.find(dir) != currentAdjacencies.end())
+        {
+            entt::entity currentEntity = currentAdjacencies[dir];
+            currentAdjacencies = registry.get<Adjacencies>(currentEntity).adjacencies;
+            adjacency_list.push_back(currentEntity);
+        }
+        return adjacency_list;
+    }
+};
+
 void applyInputToVelocity(entt::registry& registry, const bool* keystate)
 {
     auto view = registry.view<Velocity, const InputControllerE>();
@@ -137,17 +169,25 @@ void applyInputToVelocity(entt::registry& registry, const bool* keystate)
     });
 };
 
-void applyVelocityToPosition(entt::registry& registry)
+void applyVerticalVelocityToPosition(entt::registry& registry)
+{
+    auto view = registry.view<const Velocity, Box>();
+    view.each([&](const Velocity& velocity, Box& box) 
+        {
+            box.box.center.y += velocity.y;
+        });
+}
+
+void applyHorizontalVelocityToPosition(entt::registry& registry)
 {
     auto view = registry.view<const Velocity, Box>();
     view.each([&](const Velocity& velocity, Box& box) 
         {
             box.box.center.x += velocity.x;
-            box.box.center.y += velocity.y;
         });
 }
 
-void renderColoredEntites(entt::registry& registry, Draw drawer)
+void renderColoredEntities(entt::registry& registry, Draw& drawer)
 {
     auto view = registry.view<const Box, const SDL_Color>();
     view.each([&](const Box& box, const SDL_Color& color) 
@@ -155,6 +195,60 @@ void renderColoredEntites(entt::registry& registry, Draw drawer)
             drawer.renderColoredRectangle(color, box.box);
         });
 };
+
+void renderSprites(entt::registry& registry, Draw& drawer)
+{
+    auto view = registry.view<const Box, const Sprite>();
+    view.each([&](const Box& box, const Sprite& sprite) 
+        {
+            drawer.renderTexture(sprite.texture, box.box);
+        });
+};
+
+
+void collideDynamicEntitiesVertically(entt::registry& registry)
+{
+    auto dynamicEntities = registry.view<Box, const Velocity, const Mass, Adjacencies>();
+    auto collidableEntities = registry.view<Box>();
+    dynamicEntities.each([&](const entt::entity e1, Box& box1, const Velocity& velocity, const Mass mass, Adjacencies& adjacencies) 
+    {
+        collidableEntities.each([&](const entt::entity e2, Box& box2)
+        {
+            if (e1 != e2 && box1.box.intersects(box2.box))
+              {
+                  float dynamicStaticOverlap = box1.box.top() - box2.box.bottom();
+                  float staticDynamicOverlap = box2.box.top() - box1.box.bottom();
+                  if (dynamicStaticOverlap < staticDynamicOverlap)
+                  {
+                      adjacencies.is_on_ceiling = true;
+                      box1.box.center -= vec2::up * (dynamicStaticOverlap + COLLISION_TOLERANCE);
+                    //   std::vector<entt::entity> downObjects = adjacencies.get_adjacency_list(registry, direction::DOWN);
+                    //   for (entt::entity obj : downObjects)
+                    //   {
+                    //       Adjacencies& objAjacencies = registry.get<Adjacencies>(obj);
+                    //       objAjacencies.is_on_ceiling = true;
+                    //       Box& objBox = registry.get<Box>(obj);
+                    //       objBox.box.center -= vec2::up * dynamicStaticOverlap;
+                    //   }
+                  }
+                  else
+                  {
+                      adjacencies.is_on_floor = true;
+                      box1.box.center += vec2::up * (staticDynamicOverlap + COLLISION_TOLERANCE);
+                    //   std::vector<entt::entity> upObjects = adjacencies.get_adjacency_list(registry, direction::UP);
+                    //   for (entt::entity obj : upObjects)
+                    //   {
+                    //     Adjacencies& objAjacencies = registry.get<Adjacencies>(obj);
+                    //       objAjacencies.is_on_floor = true;
+                    //       Box& objBox = registry.get<Box>(obj);
+                    //       objBox.box.center += vec2::up * staticDynamicOverlap;
+                    //   }
+                    }
+                }
+                      
+        });
+    });
+}
 
 int main(int argc, char *argv[])
 {
@@ -175,6 +269,8 @@ int main(int argc, char *argv[])
   registry.emplace<Box>(p1Entity, aabb(vec2(WINDOW_WIDTH/2, WINDOW_HEIGHT/2), vec2(16, 16)));
   registry.emplace<SDL_Color>(p1Entity, PLAYER_ONE_COLOR);
   registry.emplace<Velocity>(p1Entity);
+  registry.emplace<Mass>(p1Entity, 1.);
+  registry.emplace<Adjacencies>(p1Entity);
   InputControllerE& p1InputController = registry.emplace<InputControllerE>(p1Entity);
   p1InputController.left_key = SDL_SCANCODE_A;
   p1InputController.right_key = SDL_SCANCODE_D;
@@ -186,12 +282,17 @@ int main(int argc, char *argv[])
   registry.emplace<Box>(p2Entity, aabb(vec2(WINDOW_WIDTH/4, WINDOW_HEIGHT/4), vec2(16, 16)));
   registry.emplace<SDL_Color>(p2Entity, PLAYER_TWO_COLOR);
   registry.emplace<Velocity>(p2Entity);
+  registry.emplace<Mass>(p2Entity, 1.);
+  registry.emplace<Adjacencies>(p2Entity);
   InputControllerE& p2InputController = registry.emplace<InputControllerE>(p2Entity);
   p2InputController.left_key = SDL_SCANCODE_LEFT;
   p2InputController.right_key = SDL_SCANCODE_RIGHT;
   p2InputController.up_key = SDL_SCANCODE_UP;
   p2InputController.down_key = SDL_SCANCODE_DOWN;
 
+  const entt::entity platformEntity = registry.create();
+  registry.emplace<Box>(platformEntity, aabb(vec2(WINDOW_WIDTH/2, WINDOW_HEIGHT/2 - PLAYER_HEIGHT * 2), vec2(48, 8)));
+  registry.emplace<Sprite>(platformEntity, textureManager.normalTexture);
 
   Player p1(vec2(WINDOW_WIDTH/2, WINDOW_HEIGHT/2));
 
@@ -260,8 +361,13 @@ int main(int argc, char *argv[])
     // drawer.renderColoredRectangle(PLAYER_TWO_COLOR, p2.box);
 
     applyInputToVelocity(registry, keystate);
-    applyVelocityToPosition(registry);
-    renderColoredEntites(registry, drawer);
+
+    applyVerticalVelocityToPosition(registry);
+    collideDynamicEntitiesVertically(registry);
+    applyHorizontalVelocityToPosition(registry);
+
+    renderColoredEntities(registry, drawer);
+    renderSprites(registry, drawer);
 
     for(const platform* p : stage.getPlatforms())
     {
