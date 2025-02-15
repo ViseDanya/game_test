@@ -91,6 +91,71 @@ void Cleanup()
   SDL_Quit();
 }
 
+struct Box
+{
+    aabb box;
+};
+
+struct Velocity
+{
+    float x;
+    float y;
+};
+
+struct InputControllerE
+{
+    SDL_Scancode left_key;
+    SDL_Scancode right_key;
+    SDL_Scancode up_key;
+    SDL_Scancode down_key;
+    bool gravity_enabled;
+};
+
+void applyInputToVelocity(entt::registry& registry, const bool* keystate)
+{
+    auto view = registry.view<Velocity, const InputControllerE>();
+    view.each([&](Velocity& velocity, const InputControllerE& inputController) 
+        {
+            velocity.x = 0;
+            velocity.y = 0;
+            if (keystate[inputController.left_key])
+            {
+                velocity.x -= PLAYER_SPEED * 1.f/FPS;
+            }
+            if (keystate[inputController.right_key])
+            {
+                velocity.x += PLAYER_SPEED * 1.f/FPS;
+            }
+            if (keystate[inputController.up_key])
+            {
+                velocity.y += PLAYER_SPEED * 1.f/FPS;
+            }
+            if (keystate[inputController.down_key])
+            {
+                velocity.y -= PLAYER_SPEED * 1.f/FPS;
+            }
+    });
+};
+
+void applyVelocityToPosition(entt::registry& registry)
+{
+    auto view = registry.view<const Velocity, Box>();
+    view.each([&](const Velocity& velocity, Box& box) 
+        {
+            box.box.center.x += velocity.x;
+            box.box.center.y += velocity.y;
+        });
+}
+
+void renderColoredEntites(entt::registry& registry, Draw drawer)
+{
+    auto view = registry.view<const Box, const SDL_Color>();
+    view.each([&](const Box& box, const SDL_Color& color) 
+        {
+            drawer.renderColoredRectangle(color, box.box);
+        });
+};
+
 int main(int argc, char *argv[])
 {
   Init_SDL();
@@ -104,6 +169,29 @@ int main(int argc, char *argv[])
 
   bool quit = false;
   SDL_Event event;
+
+  entt::registry registry;
+  const entt::entity p1Entity = registry.create();
+  registry.emplace<Box>(p1Entity, aabb(vec2(WINDOW_WIDTH/2, WINDOW_HEIGHT/2), vec2(16, 16)));
+  registry.emplace<SDL_Color>(p1Entity, PLAYER_ONE_COLOR);
+  registry.emplace<Velocity>(p1Entity);
+  InputControllerE& p1InputController = registry.emplace<InputControllerE>(p1Entity);
+  p1InputController.left_key = SDL_SCANCODE_A;
+  p1InputController.right_key = SDL_SCANCODE_D;
+  p1InputController.up_key = SDL_SCANCODE_W;
+  p1InputController.down_key = SDL_SCANCODE_S;
+
+
+  const entt::entity p2Entity = registry.create();
+  registry.emplace<Box>(p2Entity, aabb(vec2(WINDOW_WIDTH/4, WINDOW_HEIGHT/4), vec2(16, 16)));
+  registry.emplace<SDL_Color>(p2Entity, PLAYER_TWO_COLOR);
+  registry.emplace<Velocity>(p2Entity);
+  InputControllerE& p2InputController = registry.emplace<InputControllerE>(p2Entity);
+  p2InputController.left_key = SDL_SCANCODE_LEFT;
+  p2InputController.right_key = SDL_SCANCODE_RIGHT;
+  p2InputController.up_key = SDL_SCANCODE_UP;
+  p2InputController.down_key = SDL_SCANCODE_DOWN;
+
 
   Player p1(vec2(WINDOW_WIDTH/2, WINDOW_HEIGHT/2));
 
@@ -168,8 +256,12 @@ int main(int argc, char *argv[])
     //   debugRenderer.render(p->box);
     // }
 
-    drawer.renderColoredRectangle(PLAYER_ONE_COLOR, p1.box);
-    drawer.renderColoredRectangle(PLAYER_TWO_COLOR, p2.box);
+    // drawer.renderColoredRectangle(PLAYER_ONE_COLOR, p1.box);
+    // drawer.renderColoredRectangle(PLAYER_TWO_COLOR, p2.box);
+
+    applyInputToVelocity(registry, keystate);
+    applyVelocityToPosition(registry);
+    renderColoredEntites(registry, drawer);
 
     for(const platform* p : stage.getPlatforms())
     {

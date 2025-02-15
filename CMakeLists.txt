@@ -7,6 +7,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${Game_SOURCE_DIR}/cmake")
 find_package(SDL3 REQUIRED)
 find_package(SDL3_image REQUIRED)
 find_package(ENet REQUIRED)
+find_package(EnTT REQUIRED)
 
 include_directories("src/" "src/imgui/" "src/imgui/backends")
 include_directories(${ENET_INCLUDE_DIRS})
@@ -29,18 +30,13 @@ set(MAIN_SOURCES
     "src/PlayerInputController.cpp"
     "src/Stage.cpp"
     "src/vec2.cpp"
-    "src/main.cpp"
     "src/Client.cpp"
     "src/TextureManager.cpp"
     )
 
-add_executable(main ${MAIN_SOURCES})
-target_link_libraries(main PRIVATE SDL3::SDL3 SDL3_image::SDL3_image ${ENET_LIBRARIES})
+add_executable(main "src/main.cpp" ${MAIN_SOURCES})
+target_link_libraries(main PRIVATE SDL3::SDL3 SDL3_image::SDL3_image EnTT::EnTT ${ENET_LIBRARIES})
 
-set(SERVER_SOURCES
-    "src/server.cpp"
-    )
-
-add_executable(server ${SERVER_SOURCES})
-target_link_libraries(server PRIVATE ${ENET_LIBRARIES})
+add_executable(main_entt "src/main_entt.cpp" ${MAIN_SOURCES})
+target_link_libraries(main_entt PRIVATE SDL3::SDL3 SDL3_image::SDL3_image EnTT::EnTT ${ENET_LIBRARIES})
 
