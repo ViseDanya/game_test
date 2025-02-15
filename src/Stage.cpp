@@ -242,7 +242,7 @@ void Stage::CollideDynamicWithDynamicHorizontal()
                     rightObject->box.center += vec2::right * (overlap * massLeft / totalMass + COLLISION_TOLERANCE);
 
                     std::for_each(leftObjects.cbegin(), leftObjects.cend(), [&](dynamic_object* obj){obj->box.center -= vec2::right * (overlap * massRight / totalMass);});
-                    std::for_each(rightObjects.cbegin(), rightObjects.cend(), [&](dynamic_object* obj){obj->box.center -= vec2::right * (overlap * massLeft / totalMass);});
+                    std::for_each(rightObjects.cbegin(), rightObjects.cend(), [&](dynamic_object* obj){obj->box.center += vec2::right * (overlap * massLeft / totalMass);});
 
                     leftObject->adjacencies[direction::RIGHT] = rightObject;
                     rightObject->adjacencies[direction::LEFT] = leftObject;
