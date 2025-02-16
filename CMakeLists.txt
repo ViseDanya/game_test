@@ -23,7 +23,6 @@ set(MAIN_SOURCES
     ${IMGUI_SOURCES}
     "src/aabb.cpp"
     "src/Renderer.cpp"
-    "src/vec2.cpp"
     "src/Client.cpp"
     "src/TextureManager.cpp"
     )
