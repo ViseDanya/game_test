@@ -89,11 +89,10 @@ void Cleanup()
 
 struct Velocity
 {
-    float x;
-    float y;
+    glm::vec2 velocity;
 };
 
-struct InputControllerE
+struct InputController
 {
     SDL_Scancode left_key;
     SDL_Scancode right_key;
@@ -112,7 +111,7 @@ struct Mass
     float mass;
 };
 
-enum direction
+enum Direction
 {
   UP, DOWN, LEFT, RIGHT
 };
@@ -123,7 +122,7 @@ struct Adjacencies
     bool is_on_floor;
     bool is_on_wall_left;
     bool is_on_wall_right;
-    std::unordered_map<direction, entt::entity> adjacencies;
+    std::unordered_map<Direction, entt::entity> adjacencies;
 
     void reset()
     {
@@ -134,10 +133,10 @@ struct Adjacencies
       adjacencies.clear();  
     }
     
-    std::vector<entt::entity> get_adjacency_list(entt::registry& registry, direction dir)
+    std::vector<entt::entity> get_adjacency_list(entt::registry& registry, Direction dir)
     {
         std::vector<entt::entity> adjacency_list;
-        std::unordered_map<direction, entt::entity> currentAdjacencies = adjacencies;
+        std::unordered_map<Direction, entt::entity> currentAdjacencies = adjacencies;
         while(currentAdjacencies.find(dir) != currentAdjacencies.end())
         {
             entt::entity currentEntity = currentAdjacencies[dir];
@@ -150,41 +149,41 @@ struct Adjacencies
 
 void applyInputToVelocity(entt::registry& registry, const bool* keystate, const bool gravity_enabled)
 {
-    auto view = registry.view<Velocity, const InputControllerE, const Adjacencies>();
-    view.each([&](Velocity& velocity, const InputControllerE& inputController, const Adjacencies& adjacencies) 
+    auto view = registry.view<Velocity, const InputController, const Adjacencies>();
+    view.each([&](Velocity& velocity, const InputController& inputController, const Adjacencies& adjacencies) 
         {
-            velocity.x = 0;
+            velocity.velocity.x = 0;
             if (!gravity_enabled || adjacencies.is_on_floor)
             {
-                velocity.y = 0;
+                velocity.velocity.y = 0;
             }
             else
             {
-                velocity.y += GRAVITY * 1.f/FPS * 1.f/FPS;
+                velocity.velocity.y += GRAVITY * 1.f/FPS * 1.f/FPS;
             }
 
             if (keystate[inputController.left_key])
             {
-                velocity.x -= PLAYER_SPEED * 1.f/FPS;
+                velocity.velocity.x -= PLAYER_SPEED * 1.f/FPS;
             }
             if (keystate[inputController.right_key])
             {
-                velocity.x += PLAYER_SPEED * 1.f/FPS;
+                velocity.velocity.x += PLAYER_SPEED * 1.f/FPS;
             }
             if (keystate[inputController.up_key])
             {
               if(!gravity_enabled)
               {
-                velocity.y += PLAYER_SPEED * 1.f/FPS;
+                velocity.velocity.y += PLAYER_SPEED * 1.f/FPS;
               }
               else if(adjacencies.is_on_floor)
               {
-                velocity.y += PLAYER_JUMP_SPEED * 1.f/FPS;
+                velocity.velocity.y += PLAYER_JUMP_SPEED * 1.f/FPS;
               }
             }
             if (keystate[inputController.down_key] && !gravity_enabled)
             {
-                velocity.y -= PLAYER_SPEED * 1.f/FPS;
+                velocity.velocity.y -= PLAYER_SPEED * 1.f/FPS;
             }
     });
 };
@@ -194,7 +193,7 @@ void applyVerticalVelocityToPosition(entt::registry& registry)
     auto view = registry.view<const Velocity, Box>();
     view.each([&](const Velocity& velocity, Box& box) 
         {
-            box.center.y += velocity.y;
+            box.center.y += velocity.velocity.y;
         });
 }
 
@@ -203,7 +202,7 @@ void applyHorizontalVelocityToPosition(entt::registry& registry)
     auto view = registry.view<const Velocity, Box>();
     view.each([&](const Velocity& velocity, Box& box) 
         {
-            box.center.x += velocity.x;
+            box.center.x += velocity.velocity.x;
         });
 }
 
@@ -233,7 +232,7 @@ void collideDynamicWithStaticEntityVertically(entt::registry& registry, Box& box
                 {
                     adjacencies.is_on_ceiling = true;
                     box1.center -= glm::UP * (dynamicStaticOverlap + COLLISION_TOLERANCE);
-                    std::vector<entt::entity> downObjects = adjacencies.get_adjacency_list(registry, direction::DOWN);
+                    std::vector<entt::entity> downObjects = adjacencies.get_adjacency_list(registry, Direction::DOWN);
                     for (entt::entity obj : downObjects)
                     {
                         Adjacencies& objAjacencies = registry.get<Adjacencies>(obj);
@@ -246,7 +245,7 @@ void collideDynamicWithStaticEntityVertically(entt::registry& registry, Box& box
                 {
                     adjacencies.is_on_floor = true;
                     box1.center += glm::UP * (staticDynamicOverlap + COLLISION_TOLERANCE);
-                    std::vector<entt::entity> upObjects = adjacencies.get_adjacency_list(registry, direction::UP);
+                    std::vector<entt::entity> upObjects = adjacencies.get_adjacency_list(registry, Direction::UP);
                     for (entt::entity obj : upObjects)
                     {
                       Adjacencies& objAjacencies = registry.get<Adjacencies>(obj);
@@ -264,8 +263,8 @@ void  collideDownWithUpDynamicEntityVertically(entt::registry& registry, entt::e
 
   float overlap = downBox.top() - upBox.bottom();
 
-                    std::vector<entt::entity> downObjects = downAdjacencies.get_adjacency_list(registry, direction::DOWN);
-                    std::vector<entt::entity> upObjects = upAdjacencies.get_adjacency_list(registry, direction::UP);
+                    std::vector<entt::entity> downObjects = downAdjacencies.get_adjacency_list(registry, Direction::DOWN);
+                    std::vector<entt::entity> upObjects = upAdjacencies.get_adjacency_list(registry, Direction::UP);
 
                     if (downAdjacencies.is_on_floor)
                     {
@@ -305,12 +304,12 @@ void  collideDownWithUpDynamicEntityVertically(entt::registry& registry, entt::e
                         downBox.center -= glm::UP * (overlap + COLLISION_TOLERANCE);
                         Velocity& upVelocity = registry.get<Velocity>(upObject);
                         Velocity& downVelocity = registry.get<Velocity>(downObject);
-                        upVelocity.y = downVelocity.y;
-                        downVelocity.y = 0;
+                        upVelocity.velocity.y = downVelocity.velocity.y;
+                        downVelocity.velocity.y = 0;
                     }
 
-                    downAdjacencies.adjacencies[direction::UP] = upObject;
-                    upAdjacencies.adjacencies[direction::DOWN] = downObject;
+                    downAdjacencies.adjacencies[Direction::UP] = upObject;
+                    upAdjacencies.adjacencies[Direction::DOWN] = downObject;
 }
 
 
@@ -367,7 +366,7 @@ void collideDynamicWithStaticEntityHorizontally(entt::registry& registry, Box& b
           {
               adjacencies.is_on_wall_right = true;
               box1.center -= glm::RIGHT * (dynamicStaticOverlap + COLLISION_TOLERANCE);
-              std::vector<entt::entity> leftObjects = adjacencies.get_adjacency_list(registry, direction::LEFT);
+              std::vector<entt::entity> leftObjects = adjacencies.get_adjacency_list(registry, Direction::LEFT);
               for (entt::entity obj : leftObjects)
               {
                 Adjacencies& objAjacencies = registry.get<Adjacencies>(obj);
@@ -380,7 +379,7 @@ void collideDynamicWithStaticEntityHorizontally(entt::registry& registry, Box& b
           {
             adjacencies.is_on_wall_left = true;
             box1.center += glm::RIGHT * (staticDynamicOverlap + COLLISION_TOLERANCE);
-            std::vector<entt::entity> rightObjects = adjacencies.get_adjacency_list(registry, direction::RIGHT);
+            std::vector<entt::entity> rightObjects = adjacencies.get_adjacency_list(registry, Direction::RIGHT);
             for (entt::entity obj : rightObjects)
             {
               Adjacencies& objAjacencies = registry.get<Adjacencies>(obj);
@@ -398,8 +397,8 @@ void collideDynamicWithStaticEntityHorizontally(entt::registry& registry, Box& b
 
     float overlap = leftBox.right() - rightBox.left();
 
-        std::vector<entt::entity> leftObjects = leftAdjacencies.get_adjacency_list(registry, direction::LEFT);
-        std::vector<entt::entity> rightObjects = rightAdjacencies.get_adjacency_list(registry, direction::RIGHT);
+        std::vector<entt::entity> leftObjects = leftAdjacencies.get_adjacency_list(registry, Direction::LEFT);
+        std::vector<entt::entity> rightObjects = rightAdjacencies.get_adjacency_list(registry, Direction::RIGHT);
 
         float massLeft = std::accumulate(leftObjects.cbegin(), leftObjects.cend(), leftMass.mass, 
           [&](float acc, entt::entity e){return acc + registry.get<const Mass>(e).mass;});
@@ -413,8 +412,8 @@ void collideDynamicWithStaticEntityHorizontally(entt::registry& registry, Box& b
         std::for_each(leftObjects.cbegin(), leftObjects.cend(), [&](entt::entity e){registry.get<Box>(e).center -= glm::RIGHT * (overlap * massRight / totalMass);});
         std::for_each(rightObjects.cbegin(), rightObjects.cend(), [&](entt::entity e){registry.get<Box>(e).center += glm::RIGHT * (overlap * massLeft / totalMass);});
 
-        leftAdjacencies.adjacencies[direction::RIGHT] = rightEntity;
-        rightAdjacencies.adjacencies[direction::LEFT] = leftEntity;
+        leftAdjacencies.adjacencies[Direction::RIGHT] = rightEntity;
+        rightAdjacencies.adjacencies[Direction::LEFT] = leftEntity;
   }
 
   void collideDynamicWithDynamicEntityHorizontally(entt::registry& registry, entt::entity e1, entt::entity e2)
@@ -492,7 +491,7 @@ int main(int argc, char *argv[])
   registry.emplace<Velocity>(p1Entity);
   registry.emplace<Mass>(p1Entity, 1.);
   registry.emplace<Adjacencies>(p1Entity);
-  InputControllerE& p1InputController = registry.emplace<InputControllerE>(p1Entity);
+  InputController& p1InputController = registry.emplace<InputController>(p1Entity);
   p1InputController.left_key = SDL_SCANCODE_A;
   p1InputController.right_key = SDL_SCANCODE_D;
   p1InputController.up_key = SDL_SCANCODE_W;
@@ -504,7 +503,7 @@ int main(int argc, char *argv[])
   registry.emplace<Velocity>(p2Entity);
   registry.emplace<Mass>(p2Entity, 1.);
   registry.emplace<Adjacencies>(p2Entity);
-  InputControllerE& p2InputController = registry.emplace<InputControllerE>(p2Entity);
+  InputController& p2InputController = registry.emplace<InputController>(p2Entity);
   p2InputController.left_key = SDL_SCANCODE_LEFT;
   p2InputController.right_key = SDL_SCANCODE_RIGHT;
   p2InputController.up_key = SDL_SCANCODE_UP;
@@ -516,7 +515,7 @@ int main(int argc, char *argv[])
   registry.emplace<Velocity>(p3Entity);
   registry.emplace<Mass>(p3Entity, 1.);
   registry.emplace<Adjacencies>(p3Entity);
-  InputControllerE& p3InputController = registry.emplace<InputControllerE>(p3Entity);
+  InputController& p3InputController = registry.emplace<InputController>(p3Entity);
   p3InputController.left_key = SDL_SCANCODE_J;
   p3InputController.right_key = SDL_SCANCODE_L;
   p3InputController.up_key = SDL_SCANCODE_I;
