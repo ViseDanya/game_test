@@ -8,6 +8,7 @@ find_package(SDL3 REQUIRED)
 find_package(SDL3_image REQUIRED)
 find_package(ENet REQUIRED)
 find_package(EnTT REQUIRED)
+find_package(glm REQUIRED)
 
 include_directories("src/" "src/imgui/" "src/imgui/backends")
 include_directories(${ENET_INCLUDE_DIRS})
@@ -21,22 +22,11 @@ file(GLOB IMGUI_SOURCES
 set(MAIN_SOURCES
     ${IMGUI_SOURCES}
     "src/aabb.cpp"
-    "src/ColorRenderer.cpp"
-    "src/Draw.cpp"
-    "src/dynamic_object.cpp"
-    "src/game_object.cpp"
-    "src/platform.cpp"
-    "src/Player.cpp"
-    "src/PlayerInputController.cpp"
-    "src/Stage.cpp"
+    "src/Renderer.cpp"
     "src/vec2.cpp"
     "src/Client.cpp"
     "src/TextureManager.cpp"
     )
 
 add_executable(main "src/main.cpp" ${MAIN_SOURCES})
-target_link_libraries(main PRIVATE SDL3::SDL3 SDL3_image::SDL3_image EnTT::EnTT ${ENET_LIBRARIES})
-
-add_executable(main_entt "src/main_entt.cpp" ${MAIN_SOURCES})
-target_link_libraries(main_entt PRIVATE SDL3::SDL3 SDL3_image::SDL3_image EnTT::EnTT ${ENET_LIBRARIES})
-
+target_link_libraries(main PRIVATE SDL3::SDL3 SDL3_image::SDL3_image EnTT::EnTT glm::glm ${ENET_LIBRARIES})

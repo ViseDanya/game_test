@@ -1,8 +1,8 @@
-#include "Draw.h"
-#include "constants.h"
+#include "Renderer.h"
+#include "Constants.h"
 #include "SDL3_image/SDL_image.h"
 
-void Draw::renderColoredRectangle(SDL_Color color, const aabb& box)
+void Renderer::renderColoredRectangle(SDL_Color color, const aabb& box)
 {
     SDL_FRect dest = {box.left(), WINDOW_HEIGHT - box.top(), 
                         box.size.x * 2, box.size.y * 2};
@@ -10,7 +10,7 @@ void Draw::renderColoredRectangle(SDL_Color color, const aabb& box)
   	SDL_RenderFillRect(renderer, &dest);
 }
 
-void Draw::renderTexture(SDL_Texture* texture, const aabb& box)
+void Renderer::renderTexture(SDL_Texture* texture, const aabb& box)
 {
     SDL_FRect dest = {box.left(), WINDOW_HEIGHT - box.top(), 
                         box.size.x * 2, box.size.y * 2};

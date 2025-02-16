@@ -1,23 +1,23 @@
 #pragma once
 
-#include "vec2.h"
+#include <glm/vec2.hpp>
 
 class aabb
 {
     public:
         aabb() = default;
-        aabb(vec2 center, vec2 size);
+        aabb(glm::vec2 center, glm::vec2 size);
         float left() const;
         float right() const;
         float top() const;
         float bottom() const;
-        vec2 top_left() const;
-        vec2 top_right() const;
-        vec2 bottom_left() const;
-        vec2 bottom_right() const;;
+        glm::vec2 top_left() const;
+        glm::vec2 top_right() const;
+        glm::vec2 bottom_left() const;
+        glm::vec2 bottom_right() const;;
 
         bool intersects(const aabb& other) const;
 
-        vec2 center;
-        vec2 size;
+        glm::vec2 center;
+        glm::vec2 size;
 };

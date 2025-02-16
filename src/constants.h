@@ -1,10 +1,17 @@
-#include "SDL3/SDL.h"
-
-extern SDL_Window* window;
-extern SDL_Renderer* renderer;
+#include <SDL3/SDL.h>
+#include <glm/vec2.hpp>
 
 const int WINDOW_WIDTH = 384;
 const int WINDOW_HEIGHT = 352;
+
+const int PLAYER_WIDTH = 32;
+const int PLAYER_HEIGHT = 32;
+
+const float PLAYER_SPEED = 180;
+const float PLAYER_JUMP_HEIGHT = 60;
+const float PLAYER_JUMP_TIME_TO_APEX = .25;
+const float GRAVITY = -2*PLAYER_JUMP_HEIGHT/(PLAYER_JUMP_TIME_TO_APEX*PLAYER_JUMP_TIME_TO_APEX);
+const float PLAYER_JUMP_SPEED = (PLAYER_JUMP_HEIGHT - .5 * GRAVITY * PLAYER_JUMP_TIME_TO_APEX * PLAYER_JUMP_TIME_TO_APEX)/(PLAYER_JUMP_TIME_TO_APEX);
 
 const int FPS = 60;
 const SDL_Color PLAYER_ONE_COLOR = {255, 0, 0, 255};
@@ -14,3 +21,14 @@ const SDL_Color BOX_COLOR = {150, 75, 0, 255};
 const SDL_Color PLATFORM_COLOR = {0, 0, 255, 255};
 
 const float COLLISION_TOLERANCE = .001f;
+
+namespace glm
+{
+    const glm::vec2 UP(0.,1.);
+    const glm::vec2 DOWN(0.,-1.);
+    const glm::vec2 LEFT(-1.,0.);
+    const glm::vec2 RIGHT(1.,0.);
+    const glm::vec2 ZERO(0.,0.);
+}
+
+
