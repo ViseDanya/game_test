@@ -21,7 +21,7 @@ file(GLOB IMGUI_SOURCES
 
 set(MAIN_SOURCES
     ${IMGUI_SOURCES}
-    "src/aabb.cpp"
+    "src/Box.cpp"
     "src/Renderer.cpp"
     "src/Client.cpp"
     "src/TextureManager.cpp"

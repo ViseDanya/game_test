@@ -2,11 +2,11 @@
 
 #include <glm/vec2.hpp>
 
-class aabb
+class Box
 {
     public:
-        aabb() = default;
-        aabb(glm::vec2 center, glm::vec2 size);
+        Box() = default;
+        Box(glm::vec2 center, glm::vec2 size);
         float left() const;
         float right() const;
         float top() const;
@@ -16,7 +16,7 @@ class aabb
         glm::vec2 bottom_left() const;
         glm::vec2 bottom_right() const;;
 
-        bool intersects(const aabb& other) const;
+        bool intersects(const Box& other) const;
 
         glm::vec2 center;
         glm::vec2 size;
