@@ -20,7 +20,7 @@
 static SDL_Window* window = nullptr;
 static SDL_Renderer* sdlRenderer = nullptr;
 
-static bool gravity_enabled = false;
+static bool gravityEnabled = false;
 
 void Init_Enet()
 {
@@ -76,7 +76,7 @@ void Show_ImGui()
     ImGui::SetNextWindowSize({0, 0});
     ImGui::SetNextWindowPos({10, 10});
     ImGui::Begin("Options");
-    ImGui::Checkbox("Gravity", &gravity_enabled);
+    ImGui::Checkbox("Gravity", &gravityEnabled);
     ImGui::End();
 
     ImGui::Render();
@@ -106,12 +106,20 @@ struct Sprite
     SDL_Texture* texture;
 };
 
-void applyGravityToVelocity(entt::registry& registry)
+void resetVelocity(entt::registry& registry, const bool gravityEnabled)
 {
-  auto view = registry.view<Velocity>();
-  view.each([&](Velocity& velocity) 
+  auto view = registry.view<Velocity, const Adjacencies>();
+  view.each([&](entt::entity e, Velocity& velocity, const Adjacencies& adjacencies) 
   {
-    velocity.velocity.y += GRAVITY * 1.f/FPS * 1.f/FPS;
+    velocity.velocity.x = 0;
+    if(adjacencies.isOnFloor || !gravityEnabled)
+    {
+      velocity.velocity.y = 0;
+    }
+    if(gravityEnabled)
+    {
+      velocity.velocity.y += GRAVITY * 1.f/FPS * 1.f/FPS;
+    }
   });
 }
 
@@ -120,8 +128,6 @@ void applyInputToVelocity(entt::registry& registry, const bool* keystate, const 
     auto view = registry.view<Velocity, const InputController, const Adjacencies>();
     view.each([&](Velocity& velocity, const InputController& inputController, const Adjacencies& adjacencies) 
         {
-            velocity.velocity.x = 0;
-
             if (keystate[inputController.left_key])
             {
                 velocity.velocity.x -= PLAYER_SPEED * 1.f/FPS;
@@ -255,9 +261,9 @@ int main(int argc, char *argv[])
   registry.emplace<Adjacencies>(boxEntity);
 
   const entt::entity platformEntity = registry.create();
-  registry.emplace<Box>(platformEntity, Box(glm::vec2(WINDOW_WIDTH/2, WINDOW_HEIGHT/2 - PLAYER_HEIGHT * 2), glm::vec2(48, 8)));
+  registry.emplace<Box>(platformEntity, Box(glm::vec2(WINDOW_WIDTH/2, WINDOW_HEIGHT/2 - PLAYER_HEIGHT * 2), glm::vec2(100, 8)));
   registry.emplace<Sprite>(platformEntity, textureManager.normalTexture);
-  registry.emplace<Conveyor>(platformEntity);
+  registry.emplace<Conveyor>(platformEntity, PLAYER_SPEED/2.);
 
   const entt::entity floor = registry.create();
   registry.emplace<Box>(floor, Box(glm::vec2(WINDOW_WIDTH/2, 0), glm::vec2(WINDOW_WIDTH/2, 8)));
@@ -283,14 +289,8 @@ int main(int argc, char *argv[])
 
     Show_ImGui();
 
-    resetVerticalVelocityForEntitiesOnFloor(registry);
-
-    if(gravity_enabled)
-    {
-      applyGravityToVelocity(registry);
-    }
-
-    applyInputToVelocity(registry, keystate, gravity_enabled);
+    resetVelocity(registry, gravityEnabled);
+    applyInputToVelocity(registry, keystate, gravityEnabled);
     resetAdjacencies(registry);
     applyVelocityToPosition(registry);
     resolveCollisions(registry);

@@ -2,5 +2,5 @@
 
 struct Conveyor
 {
-    float speed = -90;
+    float speed;
 };
