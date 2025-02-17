@@ -1,5 +1,8 @@
+#pragma once
+
 #include <SDL3/SDL.h>
 #include <glm/vec2.hpp>
+#include <iostream>
 
 const int WINDOW_WIDTH = 384;
 const int WINDOW_HEIGHT = 352;
@@ -30,5 +33,7 @@ namespace glm
     const glm::vec2 RIGHT(1.,0.);
     const glm::vec2 ZERO(0.,0.);
 }
+
+std::ostream& operator<<(std::ostream& stream, const glm::vec2& v);
 
 

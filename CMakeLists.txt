@@ -10,7 +10,7 @@ find_package(ENet REQUIRED)
 find_package(EnTT REQUIRED)
 find_package(glm REQUIRED)
 
-include_directories("src/" "src/imgui/" "src/imgui/backends")
+include_directories("src/" "src/Components" "src/imgui/" "src/imgui/backends")
 include_directories(${ENET_INCLUDE_DIRS})
 
 file(GLOB IMGUI_SOURCES
@@ -21,10 +21,10 @@ file(GLOB IMGUI_SOURCES
 
 set(MAIN_SOURCES
     ${IMGUI_SOURCES}
-    "src/Box.cpp"
     "src/Renderer.cpp"
     "src/Client.cpp"
     "src/TextureManager.cpp"
+    "src/Constants.cpp"
     )
 
 add_executable(main "src/main.cpp" ${MAIN_SOURCES})
