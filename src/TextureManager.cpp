@@ -2,10 +2,14 @@
 #include "SDL3_image/SDL_image.h"
 
 constexpr char NORMAL_PLATFORM_TEXTURE_PATH[] =  "../assets/normal.png";
+constexpr char CONVEYOR_LEFT_TEXTURE_PATH[] =  "../assets/conveyor_left.png";
+constexpr char CONVEYOR_RIGHT_TEXTURE_PATH[] =  "../assets/conveyor_right.png";
 
 void TextureManager::loadAllTextures()
 {
 	normalTexture = loadTexture(NORMAL_PLATFORM_TEXTURE_PATH);
+	conveyorLeftTexture = loadTexture(CONVEYOR_LEFT_TEXTURE_PATH);
+	conveyorRightTexture = loadTexture(CONVEYOR_RIGHT_TEXTURE_PATH);
 }
 
 SDL_Texture* TextureManager::loadTexture(const char* filename)

@@ -12,6 +12,6 @@ struct Renderer
 
 	Renderer(SDL_Renderer* renderer) : renderer(renderer){};
 	void renderColoredRectangle(SDL_Color color, const Box& box);
-	void renderTexture(SDL_Texture* texture, const Box& box);
+	void renderTexture(SDL_Texture* texture, const SDL_FRect& sourceRect, const Box& box);
 };
 

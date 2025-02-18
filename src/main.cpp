@@ -12,6 +12,9 @@
 #include "Components/Velocity.h"
 #include "Components/Adjacencies.h"
 #include "Components/Mass.h"
+#include "Components/InputController.h"
+#include "Components/Sprite.h"
+#include "Components/Animation.h"
 #include <iostream>
 #include <entt/entt.hpp>
 #include <numeric>
@@ -92,20 +95,6 @@ void Cleanup()
   SDL_Quit();
 }
 
-struct InputController
-{
-    SDL_Scancode left_key;
-    SDL_Scancode right_key;
-    SDL_Scancode up_key;
-    SDL_Scancode down_key;
-    bool gravity_enabled;
-};
-
-struct Sprite
-{
-    SDL_Texture* texture;
-};
-
 void resetVelocity(entt::registry& registry, const bool gravityEnabled)
 {
   auto view = registry.view<Velocity, const Adjacencies>();
@@ -177,7 +166,7 @@ void renderSprites(entt::registry& registry, Renderer& renderer)
     auto view = registry.view<const Box, const Sprite>();
     view.each([&](const Box& box, const Sprite& sprite) 
         {
-          renderer.renderTexture(sprite.texture, box);
+          renderer.renderTexture(sprite.texture, sprite.sourceRect, box);
         });
 };
 
@@ -199,6 +188,23 @@ void resetAdjacencies(entt::registry& registry)
   adjacencies.each([&](Adjacencies& adjacencies) 
   {
     adjacencies.reset();
+  });
+}
+
+void updateAnimations(entt::registry& registry)
+{
+  auto view = registry.view<Sprite, Animation>();
+  view.each([&](Sprite& sprite, Animation& animation) 
+  {
+    const Uint64 currentTime = SDL_GetTicks();
+    const Uint64 elapsedTime = currentTime - animation.frameStartTimeMS;
+    if(elapsedTime > 1000./animation.frameRate)
+    {
+      animation.currentFrame = (animation.currentFrame + 1) % animation.frames.size();
+      animation.frameStartTimeMS = currentTime;
+    }
+
+    sprite.sourceRect = animation.frames.at(animation.currentFrame);
   });
 }
 
@@ -262,8 +268,9 @@ int main(int argc, char *argv[])
 
   const entt::entity platformEntity = registry.create();
   registry.emplace<Box>(platformEntity, Box(glm::vec2(WINDOW_WIDTH/2, WINDOW_HEIGHT/2 - PLAYER_HEIGHT * 2), glm::vec2(100, 8)));
-  registry.emplace<Sprite>(platformEntity, textureManager.normalTexture);
+  registry.emplace<Sprite>(platformEntity, textureManager.conveyorRightTexture, SDL_FRect{0,0,96,16});
   registry.emplace<Conveyor>(platformEntity, PLAYER_SPEED/2.);
+  registry.emplace<Animation>(platformEntity, Animation::createConveyorAnimation());
 
   const entt::entity floor = registry.create();
   registry.emplace<Box>(floor, Box(glm::vec2(WINDOW_WIDTH/2, 0), glm::vec2(WINDOW_WIDTH/2, 8)));
@@ -295,6 +302,7 @@ int main(int argc, char *argv[])
     applyVelocityToPosition(registry);
     resolveCollisions(registry);
 
+    updateAnimations(registry);
     renderColoredEntities(registry, drawer);
     renderSprites(registry, drawer);
 
