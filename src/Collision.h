@@ -151,7 +151,7 @@ void resolveDynamicWithConveyorCollision(entt::registry& registry, CollisionInfo
 
 void resolveDynamicWithStaticCollision(entt::registry& registry, CollisionInfo collisionInfo)
 {
-    auto [box, adjacencies] = registry.get<Box, Adjacencies>(collisionInfo.e1);
+    auto [box, velocity, adjacencies] = registry.get<Box, Velocity, Adjacencies>(collisionInfo.e1);
     const Direction collisionDirection = collisionInfo.direction;
     const Direction collisionOppositeDirection = getOppositeDirection(collisionDirection);
     const glm::vec2 collisionDirectionVector = getDirectionAsVector(collisionDirection);

@@ -9,6 +9,7 @@ struct TextureManager
     SDL_Texture* normalTexture;
     SDL_Texture* conveyorLeftTexture;
     SDL_Texture* conveyorRightTexture;
+    SDL_Texture* playerTexture;
     
     TextureManager(SDL_Renderer* renderer) : renderer(renderer) {};
     void loadAllTextures();

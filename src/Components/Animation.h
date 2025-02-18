@@ -1,3 +1,5 @@
+#pragma once
+
 #include "SDL3/SDL.h"
 #include "glm/vec2.hpp"
 #include <vector>
@@ -27,6 +29,66 @@ struct Animation
         animation.frameStartTimeMS = SDL_GetTicks();
         animation.frameRate = 16;
         animation.setFrames(4, glm::vec2{0,0}, glm::vec2{0,16}, glm::vec2{98,16});
+        return animation;
+    }
+
+    static Animation createPlayerIdleAnimation()
+    {
+        Animation animation;
+        animation.currentFrame = 0;
+        animation.frameStartTimeMS = SDL_GetTicks();
+        animation.frameRate = 1;
+        animation.frames.push_back(SDL_FRect{32*8,0,32,32});
+        return animation;
+    }
+
+    static Animation createPlayerRunRightAnimation()
+    {
+        Animation animation;
+        animation.currentFrame = 0;
+        animation.frameStartTimeMS = SDL_GetTicks();
+        animation.frameRate = 8;
+        animation.setFrames(4, glm::vec2{0,32}, glm::vec2{32,0}, glm::vec2{32,32});
+        return animation;
+    }
+
+    static Animation createPlayerRunLeftAnimation()
+    {
+        Animation animation;
+        animation.currentFrame = 0;
+        animation.frameStartTimeMS = SDL_GetTicks();
+        animation.frameRate = 8;
+        animation.setFrames(4, glm::vec2{0,0}, glm::vec2{32,0}, glm::vec2{32,32});
+        return animation;
+    }
+
+    static Animation createPlayerFallIdleAnimation()
+    {
+        Animation animation;
+        animation.currentFrame = 0;
+        animation.frameStartTimeMS = SDL_GetTicks();
+        animation.frameRate = 8;
+        animation.setFrames(4, glm::vec2{0,32*4}, glm::vec2{32,0}, glm::vec2{32,32});
+        return animation;
+    }
+
+    static Animation createPlayerFallRightAnimation()
+    {
+        Animation animation;
+        animation.currentFrame = 0;
+        animation.frameStartTimeMS = SDL_GetTicks();
+        animation.frameRate = 8;
+        animation.setFrames(4, glm::vec2{0,32*3}, glm::vec2{32,0}, glm::vec2{32,32});
+        return animation;
+    }
+
+    static Animation createPlayerFallLeftAnimation()
+    {
+        Animation animation;
+        animation.currentFrame = 0;
+        animation.frameStartTimeMS = SDL_GetTicks();
+        animation.frameRate = 8;
+        animation.setFrames(4, glm::vec2{0,32*2}, glm::vec2{32,0}, glm::vec2{32,32});
         return animation;
     }
 };

@@ -15,6 +15,7 @@
 #include "Components/InputController.h"
 #include "Components/Sprite.h"
 #include "Components/Animation.h"
+#include "Components/Animator.h"
 #include <iostream>
 #include <entt/entt.hpp>
 #include <numeric>
@@ -208,6 +209,54 @@ void updateAnimations(entt::registry& registry)
   });
 }
 
+void updateAnimators(entt::registry& registry)
+{
+  auto view = registry.view<Velocity, const Adjacencies, Animation, Animator>();
+  view.each([&](Velocity& velocity, const Adjacencies& adjacencies, Animation& animation, Animator& animator) 
+  {
+    Animator::State nextState;
+    if(velocity.velocity.x > 0)
+    {
+      if(!adjacencies.isOnFloor)
+      {
+        nextState = Animator::State::FALL_RIGHT;
+      }
+      else
+      {
+        nextState = Animator::State::RUN_RIGHT;
+      }
+    }
+    else if(velocity.velocity.x < 0)
+    {
+      if(!adjacencies.isOnFloor)
+      {
+        nextState = Animator::State::FALL_LEFT;
+      }
+      else
+      {
+        nextState = Animator::State::RUN_LEFT;
+      }
+    }
+    else
+    {
+      if(!adjacencies.isOnFloor)
+      {
+        nextState = Animator::State::FALL_IDLE;
+      }
+      else
+      {
+        nextState = Animator::State::IDLE;
+      }
+  }
+
+  if(nextState != animator.currentState)
+  {
+    animator.currentState = nextState;
+    animation = animator.animations[nextState];
+  }
+  });
+}
+
 int main(int argc, char *argv[])
 {
   Init_SDL();
@@ -225,10 +274,12 @@ int main(int argc, char *argv[])
   entt::registry registry;
   const entt::entity p1Entity = registry.create();
   registry.emplace<Box>(p1Entity, Box(glm::vec2(WINDOW_WIDTH/2, WINDOW_HEIGHT/2), glm::vec2(16, 16)));
-  registry.emplace<SDL_Color>(p1Entity, PLAYER_ONE_COLOR);
+  registry.emplace<Sprite>(p1Entity, textureManager.playerTexture);
   registry.emplace<Velocity>(p1Entity);
   registry.emplace<Mass>(p1Entity, 1.);
   registry.emplace<Adjacencies>(p1Entity);
+  registry.emplace<Animation>(p1Entity, Animation::createPlayerIdleAnimation());
+  registry.emplace<Animator>(p1Entity, Animator::createPlayerAnimtor());
   InputController& p1InputController = registry.emplace<InputController>(p1Entity);
   p1InputController.left_key = SDL_SCANCODE_A;
   p1InputController.right_key = SDL_SCANCODE_D;
@@ -237,10 +288,12 @@ int main(int argc, char *argv[])
 
   const entt::entity p2Entity = registry.create();
   registry.emplace<Box>(p2Entity, Box(glm::vec2(WINDOW_WIDTH/4, WINDOW_HEIGHT/4), glm::vec2(16, 16)));
-  registry.emplace<SDL_Color>(p2Entity, PLAYER_TWO_COLOR);
+  registry.emplace<Sprite>(p2Entity, textureManager.playerTexture);
   registry.emplace<Velocity>(p2Entity);
   registry.emplace<Mass>(p2Entity, 1.);
   registry.emplace<Adjacencies>(p2Entity);
+  registry.emplace<Animation>(p2Entity, Animation::createPlayerIdleAnimation());
+  registry.emplace<Animator>(p2Entity, Animator::createPlayerAnimtor());
   InputController& p2InputController = registry.emplace<InputController>(p2Entity);
   p2InputController.left_key = SDL_SCANCODE_LEFT;
   p2InputController.right_key = SDL_SCANCODE_RIGHT;
@@ -249,10 +302,12 @@ int main(int argc, char *argv[])
 
   const entt::entity p3Entity = registry.create();
   registry.emplace<Box>(p3Entity, Box(glm::vec2(WINDOW_WIDTH/8, WINDOW_HEIGHT/8), glm::vec2(16, 16)));
-  registry.emplace<SDL_Color>(p3Entity, PLAYER_THREE_COLOR);
+  registry.emplace<Sprite>(p3Entity, textureManager.playerTexture);
   registry.emplace<Velocity>(p3Entity);
   registry.emplace<Mass>(p3Entity, 1.);
   registry.emplace<Adjacencies>(p3Entity);
+  registry.emplace<Animation>(p3Entity, Animation::createPlayerIdleAnimation());
+  registry.emplace<Animator>(p3Entity, Animator::createPlayerAnimtor());
   InputController& p3InputController = registry.emplace<InputController>(p3Entity);
   p3InputController.left_key = SDL_SCANCODE_J;
   p3InputController.right_key = SDL_SCANCODE_L;
@@ -302,6 +357,7 @@ int main(int argc, char *argv[])
     applyVelocityToPosition(registry);
     resolveCollisions(registry);
 
+    updateAnimators(registry);
     updateAnimations(registry);
     renderColoredEntities(registry, drawer);
     renderSprites(registry, drawer);
