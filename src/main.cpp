@@ -26,6 +26,12 @@ static SDL_Renderer* sdlRenderer = nullptr;
 
 static bool gravityEnabled = false;
 
+struct Camera
+{
+  glm::vec2 position;
+  float zoom;
+};
+
 void Init_Enet()
 {
   if (enet_initialize() != 0)
@@ -153,21 +159,29 @@ void applyVelocityToPosition(entt::registry& registry)
         });
 }
 
-void renderColoredEntities(entt::registry& registry, Renderer& renderer)
+SDL_FRect getDestinationRect(const Box& box, const Camera& camera)
+{
+  SDL_FRect destRect = {(box.left() - camera.position.x)*camera.zoom + WINDOW_WIDTH/2, 
+    WINDOW_HEIGHT/2 - ((box.top() - camera.position.y)*camera.zoom), 
+    (box.size.x * 2.f) * camera.zoom, (box.size.y * 2.f) * camera.zoom};
+    return destRect;
+}
+
+void renderColoredEntities(entt::registry& registry, Renderer& renderer, const Camera& camera)
 {
     auto view = registry.view<const Box, const SDL_Color>();
     view.each([&](const Box& box, const SDL_Color& color) 
         {
-          renderer.renderColoredRectangle(color, box);
+          renderer.renderColoredRectangle(color, getDestinationRect(box, camera));
         });
 };
 
-void renderSprites(entt::registry& registry, Renderer& renderer)
+void renderSprites(entt::registry& registry, Renderer& renderer, const Camera& camera)
 {
     auto view = registry.view<const Box, const Sprite>();
     view.each([&](const Box& box, const Sprite& sprite) 
         {
-          renderer.renderTexture(sprite.texture, sprite.sourceRect, box);
+          renderer.renderTexture(sprite.texture, sprite.sourceRect, getDestinationRect(box, camera));
         });
 };
 
@@ -266,10 +280,16 @@ int main(int argc, char *argv[])
   TextureManager textureManager(sdlRenderer);
   textureManager.loadAllTextures();
 
-  Renderer drawer(sdlRenderer);
+  Renderer renderer(sdlRenderer);
 
   bool quit = false;
   SDL_Event event;
+
+  Camera camera;
+  camera.position = glm::vec2(WINDOW_WIDTH/2, WINDOW_HEIGHT/2);
+  camera.zoom = 1;
+  float mouseX;
+  float mouseY;
 
   entt::registry registry;
   const entt::entity p1Entity = registry.create();
@@ -342,7 +362,24 @@ int main(int argc, char *argv[])
       {
         quit = true;
       }
+      else if (event.type == SDL_EVENT_MOUSE_WHEEL)
+      {
+        camera.zoom *= (event.wheel.y > 0) ? 1.1f : 0.9f; // Zoom in if scrolling up, zoom out if scrolling down
+      }
     }
+
+    float prevMouseX = mouseX;
+    float prevMouseY = mouseY;
+    if (SDL_GetMouseState(&mouseX, &mouseY) & SDL_BUTTON_LMASK)
+    {
+      float deltaX = mouseX - prevMouseX;
+      float deltaY = mouseY - prevMouseY;
+      camera.position.x -= (deltaX / camera.zoom);
+      camera.position.y += (deltaY / camera.zoom);
+    }
+
+    std::cout << camera.zoom << std::endl;
+    std::cout << camera.position.x << std::endl;
 
     const bool *keystate = SDL_GetKeyboardState(nullptr);
 
@@ -359,8 +396,8 @@ int main(int argc, char *argv[])
 
     updateAnimators(registry);
     updateAnimations(registry);
-    renderColoredEntities(registry, drawer);
-    renderSprites(registry, drawer);
+    renderColoredEntities(registry, renderer, camera);
+    renderSprites(registry, renderer, camera);
 
     SDL_RenderPresent(sdlRenderer);
 
