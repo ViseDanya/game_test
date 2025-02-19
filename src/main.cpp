@@ -159,12 +159,22 @@ void applyVelocityToPosition(entt::registry& registry)
         });
 }
 
+glm::vec2 worldToCamera(const glm::vec2& coord, const Camera& camera)
+{
+  return (coord - camera.position) * camera.zoom;
+}
+
+glm::vec2 cameraToScreen(const glm::vec2& coord)
+{
+  return glm::vec2(coord.x + WINDOW_WIDTH/2, WINDOW_HEIGHT/2 - coord.y);
+}
+
 SDL_FRect getDestinationRect(const Box& box, const Camera& camera)
 {
-  SDL_FRect destRect = {(box.left() - camera.position.x)*camera.zoom + WINDOW_WIDTH/2, 
-    WINDOW_HEIGHT/2 - ((box.top() - camera.position.y)*camera.zoom), 
-    (box.size.x * 2.f) * camera.zoom, (box.size.y * 2.f) * camera.zoom};
-    return destRect;
+  const glm::vec2 screenBoxPosition = cameraToScreen(worldToCamera(box.topLeft(), camera));
+  const glm::vec2 screenBoxSize = box.size * 2.f * camera.zoom;
+  SDL_FRect destRect = {screenBoxPosition.x, screenBoxPosition.y, screenBoxSize.x, screenBoxSize.y};
+  return destRect;
 }
 
 void renderColoredEntities(entt::registry& registry, Renderer& renderer, const Camera& camera)

@@ -11,10 +11,10 @@ class Box
         float right() const{ return center.x + size.x; }
         float top() const{ return center.y + size.y; }
         float bottom() const{ return center.y - size.y; }
-        glm::vec2 top_left() const{ return glm::vec2(center.x - size.x, size.y + size.y); }
-        glm::vec2 top_right() const{ return center + size; }
-        glm::vec2 bottom_left() const{ return center - size; }
-        glm::vec2 bottom_right() const{ return glm::vec2(center.x + size.x, center.y - size.y); }
+        glm::vec2 topLeft() const{ return glm::vec2(center.x - size.x, center.y + size.y); }
+        glm::vec2 topRight() const{ return center + size; }
+        glm::vec2 bottomLeft() const{ return center - size; }
+        glm::vec2 bottomRight() const{ return glm::vec2(center.x + size.x, center.y - size.y); }
 
         bool intersects(const Box& other) const
         {
