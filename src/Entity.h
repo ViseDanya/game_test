@@ -88,3 +88,11 @@ entt::entity createWallEntity(entt::registry& registry)
     registry.emplace<Sprite>(wall, TextureManager::wallTexture,SDL_FRect{0,0,WALL_WIDTH,WALL_HEIGHT});
     return wall;
 }
+
+entt::entity createSpikesEntity(entt::registry& registry)
+{
+    const entt::entity spikes = registry.create();
+    registry.emplace<Box>(spikes, Box(glm::vec2(WINDOW_WIDTH/4, 0), glm::vec2(PLATFORM_WIDTH/2, SPIKES_HEIGHT/2)));
+    registry.emplace<Sprite>(spikes, TextureManager::spikesTexture, SDL_FRect{0,0,PLATFORM_WIDTH,SPIKES_HEIGHT});
+    return spikes;
+}

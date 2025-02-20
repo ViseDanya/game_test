@@ -12,15 +12,22 @@ void updateAnimations(entt::registry& registry)
   auto view = registry.view<Sprite, Animation>();
   view.each([&](Sprite& sprite, Animation& animation) 
   {
-    const Uint64 currentTime = SDL_GetTicks();
-    const Uint64 elapsedTime = currentTime - animation.frameStartTimeMS;
-    if(elapsedTime > 1000./animation.frameRate)
+    if(animation.isPlaying)
     {
-      animation.currentFrame = (animation.currentFrame + 1) % animation.frames.size();
-      animation.frameStartTimeMS = currentTime;
-    }
+      const Uint64 currentTime = SDL_GetTicks();
+      const Uint64 elapsedTime = currentTime - animation.frameStartTimeMS;
+      if(elapsedTime > 1000./animation.frameRate)
+      {
+        animation.currentFrame = (animation.currentFrame + 1) % animation.frames.size();
+        animation.frameStartTimeMS = currentTime;
+        if(!animation.isLooping && animation.currentFrame == 0)
+        {
+          animation.isPlaying = false;
+        }
+      }
 
-    sprite.sourceRect = animation.frames.at(animation.currentFrame);
+      sprite.sourceRect = animation.frames.at(animation.currentFrame);
+    }
   });
 }
 

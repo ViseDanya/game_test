@@ -117,6 +117,7 @@ int main(int argc, char *argv[])
 
   createConveyorEntity(registry);
   createTrampolineEntity(registry);
+  createSpikesEntity(registry);
   createWallEntity(registry);
 
   while (!quit)

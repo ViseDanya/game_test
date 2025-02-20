@@ -10,6 +10,8 @@ struct Animation
     Uint64 frameStartTimeMS;
     std::vector<SDL_FRect> frames;
     int currentFrame;
+    bool isPlaying = true;
+    bool isLooping = true;
 
     void setFrames(int numFrames, glm::vec2 startPos, glm::vec2 offset, glm::vec2 frameSize)
     {
@@ -98,6 +100,8 @@ struct Animation
         animation.currentFrame = 0;
         animation.frameStartTimeMS = SDL_GetTicks();
         animation.frameRate = 16;
+        animation.isPlaying = false;
+        animation.isLooping = false;
         animation.frames.reserve(12);
         animation.setFrames(6, glm::vec2{0,0}, glm::vec2{0,22}, glm::vec2{96,22});
         animation.frames.insert(animation.frames.end(), animation.frames.rbegin(), animation.frames.rend());

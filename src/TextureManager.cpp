@@ -7,6 +7,7 @@ constexpr char CONVEYOR_RIGHT_TEXTURE_PATH[] =  "../assets/conveyor_right.png";
 constexpr char PLAYER_TEXTURE_PATH[] =  "../assets/player.png";
 constexpr char WALL_TEXTURE_PATH[] =  "../assets/wall.png";
 constexpr char TRAMPOLINE_TEXTURE_PATH[] =  "../assets/trampoline.png";
+constexpr char SPIKES_TEXTURE_PATH[] =  "../assets/spikes.png";
 
 SDL_Texture* TextureManager::normalTexture;
 SDL_Texture* TextureManager::conveyorLeftTexture;
@@ -14,6 +15,7 @@ SDL_Texture* TextureManager::conveyorRightTexture;
 SDL_Texture* TextureManager::playerTexture;
 SDL_Texture* TextureManager::wallTexture;
 SDL_Texture* TextureManager::trampolineTexture;
+SDL_Texture* TextureManager::spikesTexture;
 
 void TextureManager::loadAllTextures(SDL_Renderer* renderer)
 {
@@ -23,6 +25,7 @@ void TextureManager::loadAllTextures(SDL_Renderer* renderer)
 	playerTexture = loadTexture(PLAYER_TEXTURE_PATH, renderer);
 	wallTexture = loadTexture(WALL_TEXTURE_PATH, renderer);
 	trampolineTexture = loadTexture(TRAMPOLINE_TEXTURE_PATH, renderer);
+	spikesTexture = loadTexture(SPIKES_TEXTURE_PATH, renderer);
 }
 
 SDL_Texture* TextureManager::loadTexture(const char* filename, SDL_Renderer* renderer)

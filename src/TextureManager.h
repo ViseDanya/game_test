@@ -11,7 +11,7 @@ struct TextureManager
     static SDL_Texture* playerTexture;
     static SDL_Texture* wallTexture;
     static SDL_Texture* trampolineTexture;
-
+    static SDL_Texture* spikesTexture;
     
     static void loadAllTextures(SDL_Renderer* renderer);
 
