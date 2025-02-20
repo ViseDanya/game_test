@@ -69,7 +69,21 @@ void Init_ImGui()
   ImGui_ImplSDLRenderer3_Init(sdlRenderer);
 }
 
-void Show_ImGui()
+void resetTestScene(entt::registry& registry)
+{
+  registry.clear();
+  createPlayer1Entity(registry, glm::vec2(WINDOW_WIDTH/2, WINDOW_HEIGHT/2));
+  createPlayer2Entity(registry, glm::vec2(WINDOW_WIDTH/2, WINDOW_HEIGHT/2));
+  createPlayer3Entity(registry, glm::vec2(WINDOW_WIDTH/2, WINDOW_HEIGHT/2));
+
+  createConveyorEntity(registry, glm::vec2(50, 20));
+  createTrampolineEntity(registry, glm::vec2(200, 20));
+  createSpikesEntity(registry, glm::vec2(300, 20));
+  createWallEntity(registry, glm::vec2(WALL_WIDTH/2, WINDOW_HEIGHT/2));
+  createFakeEntity(registry, glm::vec2(350, 40));
+}
+
+void Show_ImGui(entt::registry& registry)
 {
     ImGui_ImplSDLRenderer3_NewFrame();
     ImGui_ImplSDL3_NewFrame();
@@ -79,6 +93,10 @@ void Show_ImGui()
     ImGui::Begin("Options");
     ImGui::Checkbox("Gravity", &gravityEnabled);
     ImGui::Checkbox("Debug Colliders", &debugColliders);
+    if(ImGui::Button("Reset"))
+    {
+      resetTestScene(registry);
+    }
     ImGui::End();
 
     ImGui::Render();
@@ -113,15 +131,7 @@ int main(int argc, char *argv[])
   float mouseY;
 
   entt::registry registry;
-  createPlayer1Entity(registry);
-  createPlayer2Entity(registry);
-  createPlayer3Entity(registry);
-
-  createConveyorEntity(registry);
-  createTrampolineEntity(registry);
-  createSpikesEntity(registry);
-  createWallEntity(registry);
-  createFakeEntity(registry);
+  resetTestScene(registry);
 
   while (!quit)
   {
@@ -157,7 +167,7 @@ int main(int argc, char *argv[])
     SDL_SetRenderDrawColor(sdlRenderer, 0, 0, 0, 255);
     SDL_RenderClear(sdlRenderer);
 
-    Show_ImGui();
+    Show_ImGui(registry);
 
     resetVelocity(registry, gravityEnabled);
     applyInputToVelocity(registry, keystate, gravityEnabled);
