@@ -13,11 +13,12 @@
 #include "TextureManager.h"
 #include <entt/entt.hpp>
 
-entt::entity createPlayerEntity(entt::registry& registry, const TextureManager& textureManager)
+entt::entity createPlayerEntity(entt::registry& registry)
 {
     const entt::entity playerEntity = registry.create();
-    registry.emplace<Box>(playerEntity, Box(glm::vec2(WINDOW_WIDTH/2, WINDOW_HEIGHT/2), glm::vec2(16, 16)));
-    registry.emplace<Sprite>(playerEntity, textureManager.playerTexture);
+    registry.emplace<Box>(playerEntity, 
+      Box(glm::vec2(WINDOW_WIDTH/2, WINDOW_HEIGHT/2), glm::vec2(PLAYER_WIDTH/2, PLAYER_WIDTH/2)));
+    registry.emplace<Sprite>(playerEntity, TextureManager::playerTexture);
     registry.emplace<Velocity>(playerEntity);
     registry.emplace<Mass>(playerEntity, 1.);
     registry.emplace<Adjacencies>(playerEntity);
@@ -26,9 +27,9 @@ entt::entity createPlayerEntity(entt::registry& registry, const TextureManager& 
     return playerEntity;
 }
 
-entt::entity createPlayer1Entity(entt::registry& registry, const TextureManager& textureManager)
+entt::entity createPlayer1Entity(entt::registry& registry)
 {
-    const entt::entity p1Entity = createPlayerEntity(registry, textureManager);
+    const entt::entity p1Entity = createPlayerEntity(registry);
     InputController& p1InputController = registry.emplace<InputController>(p1Entity);
     p1InputController.left_key = SDL_SCANCODE_A;
     p1InputController.right_key = SDL_SCANCODE_D;
@@ -37,9 +38,9 @@ entt::entity createPlayer1Entity(entt::registry& registry, const TextureManager&
     return p1Entity;
 }
 
-entt::entity createPlayer2Entity(entt::registry& registry, const TextureManager& textureManager)
+entt::entity createPlayer2Entity(entt::registry& registry)
 {
-  const entt::entity p2Entity = createPlayerEntity(registry, textureManager);
+  const entt::entity p2Entity = createPlayerEntity(registry);
   InputController& p2InputController = registry.emplace<InputController>(p2Entity);
   p2InputController.left_key = SDL_SCANCODE_LEFT;
   p2InputController.right_key = SDL_SCANCODE_RIGHT;
@@ -48,9 +49,9 @@ entt::entity createPlayer2Entity(entt::registry& registry, const TextureManager&
   return p2Entity;
 }
 
-entt::entity createPlayer3Entity(entt::registry& registry, const TextureManager& textureManager)
+entt::entity createPlayer3Entity(entt::registry& registry)
 {
-  const entt::entity p3Entity = createPlayerEntity(registry, textureManager);
+  const entt::entity p3Entity = createPlayerEntity(registry);
   InputController& p3InputController = registry.emplace<InputController>(p3Entity);
   p3InputController.left_key = SDL_SCANCODE_J;
   p3InputController.right_key = SDL_SCANCODE_L;
@@ -59,21 +60,31 @@ entt::entity createPlayer3Entity(entt::registry& registry, const TextureManager&
   return p3Entity;
 }
 
-entt::entity createConveyorEntity(entt::registry& registry, const TextureManager& textureManager)
+entt::entity createConveyorEntity(entt::registry& registry)
 {
     const entt::entity platformEntity = registry.create();
-    registry.emplace<Box>(platformEntity, Box(glm::vec2(WINDOW_WIDTH/2, WINDOW_HEIGHT/2 - PLAYER_HEIGHT * 2), glm::vec2(100, 8)));
-    registry.emplace<Sprite>(platformEntity, textureManager.conveyorRightTexture, SDL_FRect{0,0,96,16});
+    registry.emplace<Box>(platformEntity, 
+      Box(glm::vec2(WINDOW_WIDTH/2, WINDOW_HEIGHT/2 - PLAYER_HEIGHT * 2), glm::vec2(PLATFORM_WIDTH/2, PLATFORM_HEIGHT/2)));
+    registry.emplace<Sprite>(platformEntity, TextureManager::conveyorRightTexture, SDL_FRect{0,0,PLATFORM_WIDTH,PLATFORM_HEIGHT});
     registry.emplace<Conveyor>(platformEntity, PLAYER_SPEED/2.);
     registry.emplace<Animation>(platformEntity, Animation::createConveyorAnimation());
     return platformEntity;
 }
 
-entt::entity createTrampolineEntity(entt::registry& registry, const TextureManager& textureManager)
+entt::entity createTrampolineEntity(entt::registry& registry)
 {
-    const entt::entity floor = registry.create();
-    registry.emplace<Box>(floor, Box(glm::vec2(WINDOW_WIDTH/2, 0), glm::vec2(WINDOW_WIDTH/2, 8)));
-    registry.emplace<Sprite>(floor, textureManager.normalTexture);
-    registry.emplace<Trampoline>(floor);
-    return floor;
+    const entt::entity trampoline = registry.create();
+    registry.emplace<Box>(trampoline, Box(glm::vec2(WINDOW_WIDTH/2, 0), glm::vec2(PLATFORM_WIDTH/2, TRAMPOLINE_HEIGHT/2)));
+    registry.emplace<Sprite>(trampoline, TextureManager::trampolineTexture, SDL_FRect{0,0,PLATFORM_WIDTH,TRAMPOLINE_HEIGHT});
+    registry.emplace<Trampoline>(trampoline);
+    registry.emplace<Animation>(trampoline, Animation::createTrampolineAnimation());
+    return trampoline;
+}
+
+entt::entity createWallEntity(entt::registry& registry)
+{
+    const entt::entity wall = registry.create();
+    registry.emplace<Box>(wall, Box(glm::vec2(WALL_WIDTH/2, WINDOW_HEIGHT/2), glm::vec2(WALL_WIDTH/2, WINDOW_HEIGHT/2)));
+    registry.emplace<Sprite>(wall, TextureManager::wallTexture,SDL_FRect{0,0,WALL_WIDTH,WALL_HEIGHT});
+    return wall;
 }

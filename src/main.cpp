@@ -98,9 +98,7 @@ int main(int argc, char *argv[])
   Init_ImGui();
   Init_Enet();
   
-  TextureManager textureManager(sdlRenderer);
-  textureManager.loadAllTextures();
-
+  TextureManager::loadAllTextures(sdlRenderer);
   Renderer renderer(sdlRenderer);
 
   bool quit = false;
@@ -113,12 +111,13 @@ int main(int argc, char *argv[])
   float mouseY;
 
   entt::registry registry;
-  createPlayer1Entity(registry, textureManager);
-  createPlayer2Entity(registry, textureManager);
-  createPlayer3Entity(registry, textureManager);
+  createPlayer1Entity(registry);
+  createPlayer2Entity(registry);
+  createPlayer3Entity(registry);
 
-  createConveyorEntity(registry, textureManager);
-  createTrampolineEntity(registry, textureManager);
+  createConveyorEntity(registry);
+  createTrampolineEntity(registry);
+  createWallEntity(registry);
 
   while (!quit)
   {

@@ -5,15 +5,16 @@ struct SDL_Renderer;
 
 struct TextureManager
 {
-    SDL_Renderer* renderer;
-    SDL_Texture* normalTexture;
-    SDL_Texture* conveyorLeftTexture;
-    SDL_Texture* conveyorRightTexture;
-    SDL_Texture* playerTexture;
+    static SDL_Texture* normalTexture;
+    static SDL_Texture* conveyorLeftTexture;
+    static SDL_Texture* conveyorRightTexture;
+    static SDL_Texture* playerTexture;
+    static SDL_Texture* wallTexture;
+    static SDL_Texture* trampolineTexture;
+
     
-    TextureManager(SDL_Renderer* renderer) : renderer(renderer) {};
-    void loadAllTextures();
+    static void loadAllTextures(SDL_Renderer* renderer);
 
     private:
-    SDL_Texture* loadTexture(const char* filename);
+    static SDL_Texture* loadTexture(const char* filename, SDL_Renderer* renderer);
 };

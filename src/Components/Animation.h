@@ -91,4 +91,16 @@ struct Animation
         animation.setFrames(4, glm::vec2{0,32*2}, glm::vec2{32,0}, glm::vec2{32,32});
         return animation;
     }
+
+    static Animation createTrampolineAnimation()
+    {
+        Animation animation;
+        animation.currentFrame = 0;
+        animation.frameStartTimeMS = SDL_GetTicks();
+        animation.frameRate = 16;
+        animation.frames.reserve(12);
+        animation.setFrames(6, glm::vec2{0,0}, glm::vec2{0,22}, glm::vec2{96,22});
+        animation.frames.insert(animation.frames.end(), animation.frames.rbegin(), animation.frames.rend());
+        return animation;
+    }
 };

@@ -9,6 +9,7 @@
 #include <iostream>
 
 constexpr int MAX_COLLISION_ITERATIONS = 100;
+const float COLLISION_TOLERANCE = .001f;
 
 struct CollisionInfo
 {
