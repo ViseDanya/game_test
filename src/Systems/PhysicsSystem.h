@@ -52,3 +52,25 @@ void resetAdjacencies(entt::registry& registry)
     adjacencies.reset();
   });
 }
+
+void updateFakePlatforms(entt::registry& registry)
+{
+  auto fakePlatforms = registry.view<Fake, Collider, Animation>();
+  fakePlatforms.each([&](Fake& fake, Collider& collider, Animation& animation) 
+  {
+    const Uint64 currentTime = SDL_GetTicks();
+    const Uint64 timeElapsedSinceTriggered = currentTime - fake.collisionTime;
+    if(fake.state == Fake::State::TRIGGERED && timeElapsedSinceTriggered >= fake.timeUntilFlipMS)
+    {
+      fake.state = Fake::State::FLIPPING;
+      collider.enabled = false;
+      animation.currentFrame = 0;
+      animation.isPlaying = true;
+    }
+    else if(timeElapsedSinceTriggered >= fake.timeUntilFlipMS + fake.flipDuration)
+    {
+      fake.state = Fake::State::IDLE;
+      collider.enabled = true;
+    }
+  });
+}

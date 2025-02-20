@@ -6,6 +6,7 @@
 #include "Components/Trampoline.h"
 #include "Components/Conveyor.h"
 #include "Components/Collider.h"
+#include "Components/Fake.h"
 #include <numeric>
 #include <iostream>
 
@@ -152,6 +153,16 @@ void resolveDynamicWithConveyorCollision(entt::registry& registry, CollisionInfo
     }
 }
 
+void resolveDynamicWithFakeCollision(entt::registry& registry, CollisionInfo collisionInfo)
+{
+    auto& fake = registry.get<Fake>(collisionInfo.e2);
+    if(fake.state == Fake::State::IDLE && collisionInfo.direction == Direction::DOWN)
+    {
+        fake.state = Fake::State::TRIGGERED;
+        fake.collisionTime = SDL_GetTicks();
+    }
+}
+
 void resolveDynamicWithStaticCollision(entt::registry& registry, CollisionInfo collisionInfo)
 {
     auto [box, velocity, adjacencies] = registry.get<Box, Velocity, Adjacencies>(collisionInfo.e1);
@@ -195,6 +206,10 @@ void resolveCollision(entt::registry& registry, CollisionInfo collisionInfo)
         {
             resolveDynamicWithConveyorCollision(registry, collisionInfo);
         }
+        if(registry.all_of<Fake>(collisionInfo.e2))
+        {
+            resolveDynamicWithFakeCollision(registry, collisionInfo);
+        }
     }
 }
 
@@ -212,7 +227,8 @@ void resolveCollisions(entt::registry& registry)
             {
                 Box collider1InWorldSpace = Box(collider1.box.center + box1.center, collider1.box.size);
                 Box collider2InWorldSpace = Box(collider2.box.center + box2.center, collider2.box.size);
-                if(e1 != e2 && collider1InWorldSpace.intersects(collider2InWorldSpace))
+                if(e1 != e2 && collider1.enabled && collider2.enabled &&
+                    collider1InWorldSpace.intersects(collider2InWorldSpace))
                 {
                     collisionDetected =  true;
                     CollisionInfo collisionInfo;

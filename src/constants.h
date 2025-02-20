@@ -17,6 +17,7 @@ constexpr int PLATFORM_WIDTH = 96;
 constexpr int PLATFORM_HEIGHT = 16;
 constexpr int TRAMPOLINE_HEIGHT = 22;
 constexpr int SPIKES_HEIGHT = 32;
+constexpr int FAKE_HEIGHT = 36;
 
 const float PLAYER_SPEED = 180;
 const float PLAYER_JUMP_HEIGHT = 60;

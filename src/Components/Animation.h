@@ -107,4 +107,18 @@ struct Animation
         animation.frames.insert(animation.frames.end(), animation.frames.rbegin(), animation.frames.rend());
         return animation;
     }
+
+    static Animation createFakeAnimation()
+    {
+        Animation animation;
+        animation.currentFrame = 0;
+        animation.frameStartTimeMS = SDL_GetTicks();
+        animation.frameRate = 7;
+        animation.isPlaying = false;
+        animation.isLooping = false;
+        animation.frames.reserve(7);
+        animation.setFrames(6, glm::vec2{0,0}, glm::vec2{0,FAKE_HEIGHT}, glm::vec2{PLATFORM_WIDTH,FAKE_HEIGHT});
+        animation.frames.push_back(animation.frames.front());
+        return animation;
+    }
 };

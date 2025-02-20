@@ -11,6 +11,7 @@
 #include "Components/Trampoline.h"
 #include "Components/Conveyor.h"
 #include "Components/Collider.h"
+#include "Components/Fake.h"
 #include "TextureManager.h"
 #include <entt/entt.hpp>
 
@@ -105,4 +106,17 @@ entt::entity createSpikesEntity(entt::registry& registry)
     registry.emplace<Collider>(spikes, Box(glm::vec2(0,-SPIKES_HEIGHT/4), glm::vec2(PLATFORM_WIDTH/2,7)));
     registry.emplace<Sprite>(spikes, TextureManager::spikesTexture, SDL_FRect{0,0,PLATFORM_WIDTH,SPIKES_HEIGHT});
     return spikes;
+}
+
+entt::entity createFakeEntity(entt::registry& registry)
+{
+    const entt::entity fakeEntity = registry.create();
+    const Box& box = registry.emplace<Box>(fakeEntity, 
+      Box(glm::vec2(WINDOW_WIDTH/2+PLATFORM_WIDTH, WINDOW_HEIGHT/2 - PLAYER_HEIGHT * 2), 
+      glm::vec2(PLATFORM_WIDTH/2, FAKE_HEIGHT/2)));
+    registry.emplace<Collider>(fakeEntity, Box(glm::ZERO, glm::vec2(PLATFORM_WIDTH/2, PLATFORM_HEIGHT/2)));
+    registry.emplace<Sprite>(fakeEntity, TextureManager::fakeTexture, SDL_FRect{0,0,PLATFORM_WIDTH,FAKE_HEIGHT});
+    registry.emplace<Animation>(fakeEntity, Animation::createFakeAnimation());
+    registry.emplace<Fake>(fakeEntity);
+    return fakeEntity;
 }

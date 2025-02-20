@@ -5,4 +5,5 @@
 struct Collider
 {
     Box box;
+    bool enabled = true;
 };

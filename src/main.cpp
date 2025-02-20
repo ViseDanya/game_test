@@ -121,6 +121,7 @@ int main(int argc, char *argv[])
   createTrampolineEntity(registry);
   createSpikesEntity(registry);
   createWallEntity(registry);
+  createFakeEntity(registry);
 
   while (!quit)
   {
@@ -163,6 +164,7 @@ int main(int argc, char *argv[])
     resetAdjacencies(registry);
     applyVelocityToPosition(registry);
     resolveCollisions(registry);
+    updateFakePlatforms(registry);
 
     updateAnimators(registry);
     updateTrampolineAnimations(registry);
