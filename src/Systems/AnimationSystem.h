@@ -78,3 +78,18 @@ void updateAnimators(entt::registry& registry)
   }
   });
 }
+
+void updateTrampolineAnimations(entt::registry& registry)
+{
+  auto view = registry.view<Trampoline, Animation>();
+  view.each([&](Trampoline& trampoline, Animation& animation) 
+  {
+    std::cout << "Trampoline: " << trampoline.isTriggered << std::endl;
+    if(trampoline.isTriggered)
+    {
+      trampoline.isTriggered = false;
+      animation.currentFrame = 0;
+      animation.isPlaying = true;
+    }
+  });
+}

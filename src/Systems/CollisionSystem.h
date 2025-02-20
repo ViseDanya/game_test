@@ -133,9 +133,10 @@ void resolveDynamicWithDynamicCollision(entt::registry& registry, CollisionInfo 
 void resolveDynamicWithTrampolineCollision(entt::registry& registry, CollisionInfo collisionInfo)
 {
     auto [velocity, adjacencies] = registry.get<Velocity, Adjacencies>(collisionInfo.e1);
-    auto trampoline = registry.get<Trampoline>(collisionInfo.e2);
+    auto& trampoline = registry.get<Trampoline>(collisionInfo.e2);
     if(collisionInfo.direction == Direction::DOWN)
     {
+        trampoline.isTriggered = true;
         adjacencies.isOnFloor = false;
         velocity.velocity.y = trampoline.impulse * 1./FPS;
     }
@@ -176,13 +177,16 @@ void resolveCollision(entt::registry& registry, CollisionInfo collisionInfo)
 {
     const bool isFirstEntityDynamic = registry.all_of<Box, Velocity, Mass, Adjacencies>(collisionInfo.e1);
     const bool isSecondEntityDynamic = registry.all_of<Box, Velocity, Mass, Adjacencies>(collisionInfo.e2);
-    if(isFirstEntityDynamic && isSecondEntityDynamic)
+    if(isFirstEntityDynamic)
     {
-        resolveDynamicWithDynamicCollision(registry, collisionInfo);
-    }
-    else if(isFirstEntityDynamic)
-    {
-        resolveDynamicWithStaticCollision(registry, collisionInfo);
+        if(isSecondEntityDynamic)
+        {
+            resolveDynamicWithDynamicCollision(registry, collisionInfo);
+        }
+        else
+        {
+            resolveDynamicWithStaticCollision(registry, collisionInfo);
+        }
         if(registry.all_of<Trampoline>(collisionInfo.e2))
         {
             resolveDynamicWithTrampolineCollision(registry, collisionInfo);
@@ -190,18 +194,6 @@ void resolveCollision(entt::registry& registry, CollisionInfo collisionInfo)
         if(registry.all_of<Conveyor>(collisionInfo.e2))
         {
             resolveDynamicWithConveyorCollision(registry, collisionInfo);
-        }
-    }
-    else if(isSecondEntityDynamic)
-    {
-        resolveDynamicWithStaticCollision(registry, collisionInfo.reverse());
-        if(registry.all_of<Trampoline>(collisionInfo.e1))
-        {
-            resolveDynamicWithTrampolineCollision(registry, collisionInfo.reverse());
-        }
-        if(registry.all_of<Conveyor>(collisionInfo.e1))
-        {
-            resolveDynamicWithConveyorCollision(registry, collisionInfo.reverse());
         }
     }
 }

@@ -165,6 +165,7 @@ int main(int argc, char *argv[])
     resolveCollisions(registry);
 
     updateAnimators(registry);
+    updateTrampolineAnimations(registry);
     updateAnimations(registry);
     renderColoredEntities(registry, renderer, camera);
     renderSprites(registry, renderer, camera);
