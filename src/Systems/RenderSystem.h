@@ -36,7 +36,7 @@ void renderColoredEntities(entt::registry& registry, Renderer& renderer, const C
     auto view = registry.view<const Box, const SDL_Color>();
     view.each([&](const Box& box, const SDL_Color& color) 
         {
-          renderer.renderColoredRectangle(color, getDestinationRect(box, camera));
+          renderer.renderColoredFilledRectangle(color, getDestinationRect(box, camera));
         });
 };
 
@@ -46,5 +46,15 @@ void renderSprites(entt::registry& registry, Renderer& renderer, const Camera& c
     view.each([&](const Box& box, const Sprite& sprite) 
         {
           renderer.renderTexture(sprite.texture, sprite.sourceRect, getDestinationRect(box, camera));
+        });
+};
+
+void renderDebugColliders(entt::registry& registry, Renderer& renderer, const Camera& camera)
+{
+    auto view = registry.view<const Box, const Collider, const Sprite>();
+    view.each([&](const Box& box, const Collider& collider, const Sprite& sprite) 
+        {
+          const Box colliderInWorldSpace = Box(collider.box.center + box.center, collider.box.size);
+          renderer.renderColoredRectangle(SDL_Color{255,0,0,255}, getDestinationRect(colliderInWorldSpace, camera));
         });
 };

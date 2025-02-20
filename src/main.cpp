@@ -21,6 +21,7 @@ static SDL_Window* window = nullptr;
 static SDL_Renderer* sdlRenderer = nullptr;
 
 static bool gravityEnabled = false;
+static bool debugColliders = false;
 
 void Init_Enet()
 {
@@ -77,6 +78,7 @@ void Show_ImGui()
     ImGui::SetNextWindowPos({10, 10});
     ImGui::Begin("Options");
     ImGui::Checkbox("Gravity", &gravityEnabled);
+    ImGui::Checkbox("Debug Colliders", &debugColliders);
     ImGui::End();
 
     ImGui::Render();
@@ -166,6 +168,11 @@ int main(int argc, char *argv[])
     updateAnimations(registry);
     renderColoredEntities(registry, renderer, camera);
     renderSprites(registry, renderer, camera);
+
+    if(debugColliders)
+    {
+      renderDebugColliders(registry, renderer, camera);
+    }
 
     SDL_RenderPresent(sdlRenderer);
 

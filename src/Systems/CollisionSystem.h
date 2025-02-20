@@ -5,6 +5,7 @@
 #include "Components/Mass.h"
 #include "Components/Trampoline.h"
 #include "Components/Conveyor.h"
+#include "Components/Collider.h"
 #include <numeric>
 #include <iostream>
 
@@ -209,21 +210,24 @@ void resolveCollisions(entt::registry& registry)
 {
     bool collisionDetected = true;
     int numCollisionIterations = 0;
-    auto collidableEntities = registry.view<Box>();
+    auto collidableEntities = registry.view<Box, Collider>();
     while(collisionDetected && numCollisionIterations < MAX_COLLISION_ITERATIONS)
     {
         collisionDetected = false;
-        collidableEntities.each([&](const entt::entity e1, Box& box1)
+        collidableEntities.each([&](const entt::entity e1, Box& box1, Collider& collider1)
         {
-            collidableEntities.each([&](const entt::entity e2, Box& box2)
+            collidableEntities.each([&](const entt::entity e2, Box& box2, Collider& collider2)
             {
-                if(e1 != e2 && box1.intersects(box2))
+                Box collider1InWorldSpace = Box(collider1.box.center + box1.center, collider1.box.size);
+                Box collider2InWorldSpace = Box(collider2.box.center + box2.center, collider2.box.size);
+                if(e1 != e2 && collider1InWorldSpace.intersects(collider2InWorldSpace))
                 {
                     collisionDetected =  true;
                     CollisionInfo collisionInfo;
                     collisionInfo.e1 = e1;
                     collisionInfo.e2 = e2;
-                    const std::tuple<Direction, float> collisionDirectionAndOverlap = getCollisionDirectionAndOverlap(box1, box2);
+                    const std::tuple<Direction, float> collisionDirectionAndOverlap = 
+                        getCollisionDirectionAndOverlap(collider1InWorldSpace, collider2InWorldSpace);
                     collisionInfo.direction = std::get<0>(collisionDirectionAndOverlap);
                     collisionInfo.overlap = std::get<1>(collisionDirectionAndOverlap);
                     std::cout << "Colllision overlap:" << collisionInfo.overlap << std::endl;

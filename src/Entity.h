@@ -10,14 +10,16 @@
 #include "Components/Animator.h"
 #include "Components/Trampoline.h"
 #include "Components/Conveyor.h"
+#include "Components/Collider.h"
 #include "TextureManager.h"
 #include <entt/entt.hpp>
 
 entt::entity createPlayerEntity(entt::registry& registry)
 {
     const entt::entity playerEntity = registry.create();
-    registry.emplace<Box>(playerEntity, 
+    const Box& box = registry.emplace<Box>(playerEntity, 
       Box(glm::vec2(WINDOW_WIDTH/2, WINDOW_HEIGHT/2), glm::vec2(PLAYER_WIDTH/2, PLAYER_WIDTH/2)));
+    registry.emplace<Collider>(playerEntity, Box(glm::ZERO, box.size));
     registry.emplace<Sprite>(playerEntity, TextureManager::playerTexture);
     registry.emplace<Velocity>(playerEntity);
     registry.emplace<Mass>(playerEntity, 1.);
@@ -62,19 +64,23 @@ entt::entity createPlayer3Entity(entt::registry& registry)
 
 entt::entity createConveyorEntity(entt::registry& registry)
 {
-    const entt::entity platformEntity = registry.create();
-    registry.emplace<Box>(platformEntity, 
-      Box(glm::vec2(WINDOW_WIDTH/2, WINDOW_HEIGHT/2 - PLAYER_HEIGHT * 2), glm::vec2(PLATFORM_WIDTH/2, PLATFORM_HEIGHT/2)));
-    registry.emplace<Sprite>(platformEntity, TextureManager::conveyorRightTexture, SDL_FRect{0,0,PLATFORM_WIDTH,PLATFORM_HEIGHT});
-    registry.emplace<Conveyor>(platformEntity, PLAYER_SPEED/2.);
-    registry.emplace<Animation>(platformEntity, Animation::createConveyorAnimation());
-    return platformEntity;
+    const entt::entity conveyorEntity = registry.create();
+    const Box& box = registry.emplace<Box>(conveyorEntity, 
+      Box(glm::vec2(WINDOW_WIDTH/2, WINDOW_HEIGHT/2 - PLAYER_HEIGHT * 2), 
+      glm::vec2(PLATFORM_WIDTH/2, PLATFORM_HEIGHT/2)));
+    registry.emplace<Collider>(conveyorEntity, Box(glm::ZERO, box.size));
+    registry.emplace<Sprite>(conveyorEntity, TextureManager::conveyorRightTexture, SDL_FRect{0,0,PLATFORM_WIDTH,PLATFORM_HEIGHT});
+    registry.emplace<Conveyor>(conveyorEntity, PLAYER_SPEED/2.);
+    registry.emplace<Animation>(conveyorEntity, Animation::createConveyorAnimation());
+    return conveyorEntity;
 }
 
 entt::entity createTrampolineEntity(entt::registry& registry)
 {
     const entt::entity trampoline = registry.create();
-    registry.emplace<Box>(trampoline, Box(glm::vec2(WINDOW_WIDTH/2, 0), glm::vec2(PLATFORM_WIDTH/2, TRAMPOLINE_HEIGHT/2)));
+    const Box& box = registry.emplace<Box>(trampoline, Box(glm::vec2(WINDOW_WIDTH/2, 0), 
+      glm::vec2(PLATFORM_WIDTH/2, TRAMPOLINE_HEIGHT/2)));
+    registry.emplace<Collider>(trampoline, Box(glm::ZERO, box.size));
     registry.emplace<Sprite>(trampoline, TextureManager::trampolineTexture, SDL_FRect{0,0,PLATFORM_WIDTH,TRAMPOLINE_HEIGHT});
     registry.emplace<Trampoline>(trampoline);
     registry.emplace<Animation>(trampoline, Animation::createTrampolineAnimation());
@@ -84,7 +90,9 @@ entt::entity createTrampolineEntity(entt::registry& registry)
 entt::entity createWallEntity(entt::registry& registry)
 {
     const entt::entity wall = registry.create();
-    registry.emplace<Box>(wall, Box(glm::vec2(WALL_WIDTH/2, WINDOW_HEIGHT/2), glm::vec2(WALL_WIDTH/2, WINDOW_HEIGHT/2)));
+    const Box& box = registry.emplace<Box>(wall, Box(glm::vec2(WALL_WIDTH/2, WINDOW_HEIGHT/2), 
+      glm::vec2(WALL_WIDTH/2, WINDOW_HEIGHT/2)));
+    registry.emplace<Collider>(wall, Box(glm::ZERO, box.size));
     registry.emplace<Sprite>(wall, TextureManager::wallTexture,SDL_FRect{0,0,WALL_WIDTH,WALL_HEIGHT});
     return wall;
 }
@@ -92,7 +100,9 @@ entt::entity createWallEntity(entt::registry& registry)
 entt::entity createSpikesEntity(entt::registry& registry)
 {
     const entt::entity spikes = registry.create();
-    registry.emplace<Box>(spikes, Box(glm::vec2(WINDOW_WIDTH/4, 0), glm::vec2(PLATFORM_WIDTH/2, SPIKES_HEIGHT/2)));
+    registry.emplace<Box>(spikes, Box(glm::vec2(WINDOW_WIDTH/4, 0), 
+      glm::vec2(PLATFORM_WIDTH/2, SPIKES_HEIGHT/2)));
+    registry.emplace<Collider>(spikes, Box(glm::vec2(0,-SPIKES_HEIGHT/4), glm::vec2(PLATFORM_WIDTH/2,7)));
     registry.emplace<Sprite>(spikes, TextureManager::spikesTexture, SDL_FRect{0,0,PLATFORM_WIDTH,SPIKES_HEIGHT});
     return spikes;
 }
