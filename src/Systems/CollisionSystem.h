@@ -217,20 +217,20 @@ void resolveCollisions(entt::registry& registry)
 {
     bool collisionDetected = true;
     int numCollisionIterations = 0;
+    auto movingCollidableEntites = registry.view<Box, Velocity, Collider>();
     auto collidableEntities = registry.view<Box, Collider>();
     while(collisionDetected && numCollisionIterations < MAX_COLLISION_ITERATIONS)
     {
         collisionDetected = false;
-        collidableEntities.each([&](const entt::entity e1, Box& box1, Collider& collider1)
+        movingCollidableEntites.each([&](const entt::entity e1, Box& box1, Velocity& velocity1, Collider& collider1)
         {
             collidableEntities.each([&](const entt::entity e2, Box& box2, Collider& collider2)
             {
                 Box collider1InWorldSpace = Box(collider1.box.center + box1.center, collider1.box.size);
                 Box collider2InWorldSpace = Box(collider2.box.center + box2.center, collider2.box.size);
-                if(e1 != e2 && collider1.enabled && collider2.enabled &&
+                if(e1 != e2 && collider1.isEnabled && collider2.isEnabled &&
                     collider1InWorldSpace.intersects(collider2InWorldSpace))
                 {
-                    collisionDetected =  true;
                     CollisionInfo collisionInfo;
                     collisionInfo.e1 = e1;
                     collisionInfo.e2 = e2;
@@ -240,7 +240,15 @@ void resolveCollisions(entt::registry& registry)
                     collisionInfo.overlap = std::get<1>(collisionDirectionAndOverlap);
                     std::cout << "Colllision overlap:" << collisionInfo.overlap << std::endl;
                     std::cout << "Collision direction: " << collisionInfo.direction << std::endl;
-                    resolveCollision(registry, collisionInfo);
+                    if(collider2.isOneWay && (collisionInfo.direction != Direction::DOWN || velocity1.velocity.y >= 0))
+                        {
+                            return;
+                        }
+                    else
+                    {
+                        collisionDetected =  true;
+                        resolveCollision(registry, collisionInfo);
+                    }
                 }
             });
         });

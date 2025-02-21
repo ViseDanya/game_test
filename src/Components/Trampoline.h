@@ -4,6 +4,6 @@
 
 struct Trampoline
 {
-    float impulse = PLAYER_JUMP_SPEED;
+    float impulse = 2*PLAYER_JUMP_SPEED;
     bool isTriggered = false;
 };

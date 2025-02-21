@@ -5,5 +5,6 @@
 struct Collider
 {
     Box box;
-    bool enabled = true;
+    bool isEnabled = true;
+    bool isOneWay = false;
 };

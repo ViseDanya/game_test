@@ -63,14 +63,14 @@ void updateFakePlatforms(entt::registry& registry)
     if(fake.state == Fake::State::TRIGGERED && timeElapsedSinceTriggered >= fake.timeUntilFlipMS)
     {
       fake.state = Fake::State::FLIPPING;
-      collider.enabled = false;
+      collider.isEnabled = false;
       animation.currentFrame = 0;
       animation.isPlaying = true;
     }
     else if(timeElapsedSinceTriggered >= fake.timeUntilFlipMS + fake.flipDuration)
     {
       fake.state = Fake::State::IDLE;
-      collider.enabled = true;
+      collider.isEnabled = true;
     }
   });
 }

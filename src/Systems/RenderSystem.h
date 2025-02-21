@@ -55,6 +55,7 @@ void renderDebugColliders(entt::registry& registry, Renderer& renderer, const Ca
     view.each([&](const Box& box, const Collider& collider, const Sprite& sprite) 
         {
           const Box colliderInWorldSpace = Box(collider.box.center + box.center, collider.box.size);
-          renderer.renderColoredRectangle(SDL_Color{255,0,0,255}, getDestinationRect(colliderInWorldSpace, camera));
+          const SDL_Color color = collider.isEnabled ? SDL_Color{255,0,0,255} : SDL_Color{0,255,0,255};
+          renderer.renderColoredRectangle(color, getDestinationRect(colliderInWorldSpace, camera));
         });
 };

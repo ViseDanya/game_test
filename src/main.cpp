@@ -16,6 +16,7 @@
 #include <iostream>
 #include <entt/entt.hpp>
 #include <numeric>
+#include <random>
 
 static SDL_Window* window = nullptr;
 static SDL_Renderer* sdlRenderer = nullptr;
@@ -83,6 +84,53 @@ void resetTestScene(entt::registry& registry)
   createFakeEntity(registry, glm::vec2(350, 40));
 }
 
+enum PlatformType
+{
+  NORMAL, CONVEYOR_LEFT, CONVEYOR_RIGHT, TRAMPOLINE, SPIKES, FAKE, NumPlatformTypes
+};
+
+entt::entity generatePlatform(entt::registry& registry, glm::vec2 position)
+{
+  std::random_device rd;
+  std::mt19937 gen(rd());
+  std::uniform_int_distribution<> distr(0, NumPlatformTypes-1);
+  switch(distr(gen))
+  {
+    case(NORMAL):
+      return createNormalEntity(registry, position);
+    case(CONVEYOR_LEFT):
+      return createConveyorLeftEntity(registry, position);
+    case(CONVEYOR_RIGHT):
+      return createConveyorRightEntity(registry, position);
+    case(TRAMPOLINE):
+      return createTrampolineEntity(registry, position);
+    case(SPIKES):
+      return createSpikesEntity(registry, position);
+    case(FAKE):
+      return createFakeEntity(registry, position);
+    default:
+      return createNormalEntity(registry, position);
+  }
+}
+
+void intializeGameScene(entt::registry& registry)
+{
+  registry.clear();
+  createPlayer1Entity(registry, glm::vec2(WINDOW_WIDTH/2, WINDOW_HEIGHT/2));
+  createNormalEntity(registry, glm::vec2(WINDOW_WIDTH/2, WINDOW_HEIGHT/2-PLAYER_HEIGHT/2-PLATFORM_HEIGHT/2));
+  const int numPlatformsToGenerate = 100;
+  const float startHeight = WINDOW_HEIGHT/2-PLAYER_HEIGHT/2-3*PLATFORM_HEIGHT;
+  std::random_device rd;
+  std::mt19937 gen(rd());
+  std::uniform_int_distribution<> distr(PLATFORM_WIDTH/2, WINDOW_WIDTH-PLATFORM_WIDTH/2);
+  for(int i = 0; i < numPlatformsToGenerate; i++)
+  {
+    const float platformHorizontalPosition = distr(gen);
+    const float platformVerticalPosition = startHeight - i*3*PLATFORM_HEIGHT;
+    generatePlatform(registry, glm::vec2(platformHorizontalPosition, platformVerticalPosition));
+  }
+}
+
 void Show_ImGui(entt::registry& registry)
 {
     ImGui_ImplSDLRenderer3_NewFrame();
@@ -131,7 +179,8 @@ int main(int argc, char *argv[])
   float mouseY;
 
   entt::registry registry;
-  resetTestScene(registry);
+  // resetTestScene(registry);
+  intializeGameScene(registry);
 
   while (!quit)
   {
