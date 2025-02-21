@@ -13,10 +13,10 @@
 #include "Systems/CollisionSystem.h"
 #include "Systems/InputSystem.h"
 #include "Systems/PhysicsSystem.h"
+#include "Game.h"
 #include <iostream>
 #include <entt/entt.hpp>
 #include <numeric>
-#include <random>
 
 static SDL_Window* window = nullptr;
 static SDL_Renderer* sdlRenderer = nullptr;
@@ -72,71 +72,10 @@ void Init_ImGui()
   ImGui_ImplSDLRenderer3_Init(sdlRenderer);
 }
 
-enum PlatformType
-{
-  NORMAL, CONVEYOR_LEFT, CONVEYOR_RIGHT, TRAMPOLINE, SPIKES, FAKE, NumPlatformTypes
-};
-
-entt::entity generatePlatform(entt::registry& registry, glm::vec2 position)
-{
-  std::random_device rd;
-  std::mt19937 gen(rd());
-  std::uniform_int_distribution<> distr(0, NumPlatformTypes-1);
-  switch(distr(gen))
-  {
-    case(NORMAL):
-      return createNormalEntity(registry, position);
-    case(CONVEYOR_LEFT):
-      return createConveyorLeftEntity(registry, position);
-    case(CONVEYOR_RIGHT):
-      return createConveyorRightEntity(registry, position);
-    case(TRAMPOLINE):
-      return createTrampolineEntity(registry, position);
-    case(SPIKES):
-      return createSpikesEntity(registry, position);
-    case(FAKE):
-      return createFakeEntity(registry, position);
-    default:
-      return createNormalEntity(registry, position);
-  }
-}
-
-void createTestScene(entt::registry& registry)
+void resetCamera()
 {
   camera.position = glm::vec2(WINDOW_WIDTH/2, WINDOW_HEIGHT/2);
   camera.zoom = 1;
-  registry.clear();
-  createPlayer1Entity(registry, glm::vec2(WINDOW_WIDTH/2, WINDOW_HEIGHT/2));
-  createPlayer2Entity(registry, glm::vec2(WINDOW_WIDTH/2, WINDOW_HEIGHT/2));
-  createPlayer3Entity(registry, glm::vec2(WINDOW_WIDTH/2, WINDOW_HEIGHT/2));
-
-  createConveyorLeftEntity(registry, glm::vec2(50, 20));
-  createTrampolineEntity(registry, glm::vec2(200, 20));
-  createSpikesEntity(registry, glm::vec2(300, 20));
-  createWallEntity(registry, glm::vec2(WALL_WIDTH/2, WINDOW_HEIGHT/2));
-  createFakeEntity(registry, glm::vec2(350, 40));
-}
-
-void createGameScene(entt::registry& registry)
-{
-  registry.clear();
-  camera.position = glm::vec2(WINDOW_WIDTH/2, WINDOW_HEIGHT/2);
-  camera.zoom = 1;
-  createPlayer1Entity(registry, glm::vec2(WINDOW_WIDTH/2, WINDOW_HEIGHT/2));
-  createNormalEntity(registry, glm::vec2(WINDOW_WIDTH/2, WINDOW_HEIGHT/2-PLAYER_HEIGHT/2-PLATFORM_HEIGHT/2));
-  createWallEntity(registry, glm::vec2(WALL_WIDTH/2, WINDOW_HEIGHT/2));
-  createWallEntity(registry, glm::vec2(WINDOW_WIDTH - WALL_WIDTH/2, WINDOW_HEIGHT/2));
-  const int numPlatformsToGenerate = 100;
-  const float startHeight = WINDOW_HEIGHT/2-PLAYER_HEIGHT/2-3*PLATFORM_HEIGHT;
-  std::random_device rd;
-  std::mt19937 gen(rd());
-  std::uniform_int_distribution<> distr(WALL_WIDTH + PLATFORM_WIDTH/2, WINDOW_WIDTH-WALL_WIDTH-PLATFORM_WIDTH/2);
-  for(int i = 0; i < numPlatformsToGenerate; i++)
-  {
-    const float platformHorizontalPosition = distr(gen);
-    const float platformVerticalPosition = startHeight - i*3*PLATFORM_HEIGHT;
-    generatePlatform(registry, glm::vec2(platformHorizontalPosition, platformVerticalPosition));
-  }
 }
 
 void Show_ImGui(entt::registry& registry)
@@ -153,10 +92,12 @@ void Show_ImGui(entt::registry& registry)
     if(ImGui::Button("Reset Test Scene"))
     {
       createTestScene(registry);
+      resetCamera();
     }
     if(ImGui::Button("Reset Game Scene"))
     {
       createGameScene(registry);
+      resetCamera();
     }
     ImGui::End();
 
@@ -190,6 +131,7 @@ int main(int argc, char *argv[])
 
   entt::registry registry;
   createGameScene(registry);
+  resetCamera();
 
   while (!quit)
   {
