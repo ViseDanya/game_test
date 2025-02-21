@@ -51,8 +51,8 @@ void renderSprites(entt::registry& registry, Renderer& renderer, const Camera& c
 
 void renderDebugColliders(entt::registry& registry, Renderer& renderer, const Camera& camera)
 {
-    auto view = registry.view<const Box, const Collider, const Sprite>();
-    view.each([&](const Box& box, const Collider& collider, const Sprite& sprite) 
+    auto view = registry.view<const Box, const Collider>();
+    view.each([&](const Box& box, const Collider& collider) 
         {
           const Box colliderInWorldSpace = Box(collider.box.center + box.center, collider.box.size);
           const SDL_Color color = collider.isEnabled ? SDL_Color{255,0,0,255} : SDL_Color{0,255,0,255};

@@ -79,7 +79,6 @@ entt::entity createConveyorEntity(entt::registry& registry, const glm::vec2& pos
     const Box& box = registry.emplace<Box>(conveyorEntity, 
       Box(position, glm::vec2(PLATFORM_WIDTH/2, PLATFORM_HEIGHT/2)));
     registry.emplace<Collider>(conveyorEntity, Box(glm::ZERO, box.size), true, true);
-    registry.emplace<Sprite>(conveyorEntity, TextureManager::conveyorRightTexture, SDL_FRect{0,0,PLATFORM_WIDTH,PLATFORM_HEIGHT});
     registry.emplace<Conveyor>(conveyorEntity);
     registry.emplace<Animation>(conveyorEntity, Animation::createConveyorAnimation());
     return conveyorEntity;
@@ -88,6 +87,7 @@ entt::entity createConveyorEntity(entt::registry& registry, const glm::vec2& pos
 entt::entity createConveyorRightEntity(entt::registry& registry, const glm::vec2& position)
 {
     const entt::entity conveyorEntity = createConveyorEntity(registry, position);
+    registry.emplace<Sprite>(conveyorEntity, TextureManager::conveyorRightTexture, SDL_FRect{0,0,PLATFORM_WIDTH,PLATFORM_HEIGHT});
     Conveyor& conveyor = registry.get<Conveyor>(conveyorEntity);
     conveyor.speed = PLAYER_SPEED/2;
     return conveyorEntity;
@@ -96,6 +96,7 @@ entt::entity createConveyorRightEntity(entt::registry& registry, const glm::vec2
 entt::entity createConveyorLeftEntity(entt::registry& registry, const glm::vec2& position)
 {
     const entt::entity conveyorEntity = createConveyorEntity(registry, position);
+    registry.emplace<Sprite>(conveyorEntity, TextureManager::conveyorLeftTexture, SDL_FRect{0,0,PLATFORM_WIDTH,PLATFORM_HEIGHT});
     Conveyor& conveyor = registry.get<Conveyor>(conveyorEntity);
     conveyor.speed = -PLAYER_SPEED/2;
     return conveyorEntity;

@@ -21,6 +21,7 @@
 static SDL_Window* window = nullptr;
 static SDL_Renderer* sdlRenderer = nullptr;
 
+static Camera camera;
 static bool gravityEnabled = false;
 static bool manualCamera = true;
 static bool debugColliders = false;
@@ -71,20 +72,6 @@ void Init_ImGui()
   ImGui_ImplSDLRenderer3_Init(sdlRenderer);
 }
 
-void resetTestScene(entt::registry& registry)
-{
-  registry.clear();
-  createPlayer1Entity(registry, glm::vec2(WINDOW_WIDTH/2, WINDOW_HEIGHT/2));
-  createPlayer2Entity(registry, glm::vec2(WINDOW_WIDTH/2, WINDOW_HEIGHT/2));
-  createPlayer3Entity(registry, glm::vec2(WINDOW_WIDTH/2, WINDOW_HEIGHT/2));
-
-  createConveyorEntity(registry, glm::vec2(50, 20));
-  createTrampolineEntity(registry, glm::vec2(200, 20));
-  createSpikesEntity(registry, glm::vec2(300, 20));
-  createWallEntity(registry, glm::vec2(WALL_WIDTH/2, WINDOW_HEIGHT/2));
-  createFakeEntity(registry, glm::vec2(350, 40));
-}
-
 enum PlatformType
 {
   NORMAL, CONVEYOR_LEFT, CONVEYOR_RIGHT, TRAMPOLINE, SPIKES, FAKE, NumPlatformTypes
@@ -114,9 +101,27 @@ entt::entity generatePlatform(entt::registry& registry, glm::vec2 position)
   }
 }
 
-void intializeGameScene(entt::registry& registry)
+void createTestScene(entt::registry& registry)
+{
+  camera.position = glm::vec2(WINDOW_WIDTH/2, WINDOW_HEIGHT/2);
+  camera.zoom = 1;
+  registry.clear();
+  createPlayer1Entity(registry, glm::vec2(WINDOW_WIDTH/2, WINDOW_HEIGHT/2));
+  createPlayer2Entity(registry, glm::vec2(WINDOW_WIDTH/2, WINDOW_HEIGHT/2));
+  createPlayer3Entity(registry, glm::vec2(WINDOW_WIDTH/2, WINDOW_HEIGHT/2));
+
+  createConveyorLeftEntity(registry, glm::vec2(50, 20));
+  createTrampolineEntity(registry, glm::vec2(200, 20));
+  createSpikesEntity(registry, glm::vec2(300, 20));
+  createWallEntity(registry, glm::vec2(WALL_WIDTH/2, WINDOW_HEIGHT/2));
+  createFakeEntity(registry, glm::vec2(350, 40));
+}
+
+void createGameScene(entt::registry& registry)
 {
   registry.clear();
+  camera.position = glm::vec2(WINDOW_WIDTH/2, WINDOW_HEIGHT/2);
+  camera.zoom = 1;
   createPlayer1Entity(registry, glm::vec2(WINDOW_WIDTH/2, WINDOW_HEIGHT/2));
   createNormalEntity(registry, glm::vec2(WINDOW_WIDTH/2, WINDOW_HEIGHT/2-PLAYER_HEIGHT/2-PLATFORM_HEIGHT/2));
   createWallEntity(registry, glm::vec2(WALL_WIDTH/2, WINDOW_HEIGHT/2));
@@ -125,7 +130,7 @@ void intializeGameScene(entt::registry& registry)
   const float startHeight = WINDOW_HEIGHT/2-PLAYER_HEIGHT/2-3*PLATFORM_HEIGHT;
   std::random_device rd;
   std::mt19937 gen(rd());
-  std::uniform_int_distribution<> distr(PLATFORM_WIDTH/2, WINDOW_WIDTH-PLATFORM_WIDTH/2);
+  std::uniform_int_distribution<> distr(WALL_WIDTH + PLATFORM_WIDTH/2, WINDOW_WIDTH-WALL_WIDTH-PLATFORM_WIDTH/2);
   for(int i = 0; i < numPlatformsToGenerate; i++)
   {
     const float platformHorizontalPosition = distr(gen);
@@ -145,9 +150,13 @@ void Show_ImGui(entt::registry& registry)
     ImGui::Checkbox("Gravity", &gravityEnabled);
     ImGui::Checkbox("Manual Camera", &manualCamera);
     ImGui::Checkbox("Debug Colliders", &debugColliders);
-    if(ImGui::Button("Reset"))
+    if(ImGui::Button("Reset Test Scene"))
     {
-      resetTestScene(registry);
+      createTestScene(registry);
+    }
+    if(ImGui::Button("Reset Game Scene"))
+    {
+      createGameScene(registry);
     }
     ImGui::End();
 
@@ -176,15 +185,11 @@ int main(int argc, char *argv[])
   bool quit = false;
   SDL_Event event;
 
-  Camera camera;
-  camera.position = glm::vec2(WINDOW_WIDTH/2, WINDOW_HEIGHT/2);
-  camera.zoom = 1;
   float mouseX;
   float mouseY;
 
   entt::registry registry;
-  // resetTestScene(registry);
-  intializeGameScene(registry);
+  createGameScene(registry);
 
   while (!quit)
   {
@@ -225,11 +230,6 @@ int main(int argc, char *argv[])
 
     const bool *keystate = SDL_GetKeyboardState(nullptr);
 
-    SDL_SetRenderDrawColor(sdlRenderer, 0, 0, 0, 255);
-    SDL_RenderClear(sdlRenderer);
-
-    Show_ImGui(registry);
-
     resetVelocity(registry, gravityEnabled);
     applyInputToVelocity(registry, keystate, gravityEnabled);
     resetAdjacencies(registry);
@@ -237,11 +237,16 @@ int main(int argc, char *argv[])
     resolveCollisions(registry);
     updateFakePlatforms(registry);
 
+    SDL_SetRenderDrawColor(sdlRenderer, 0, 0, 0, 255);
+    SDL_RenderClear(sdlRenderer);
+
     updateAnimators(registry);
     updateTrampolineAnimations(registry);
     updateAnimations(registry);
     renderColoredEntities(registry, renderer, camera);
     renderSprites(registry, renderer, camera);
+
+    Show_ImGui(registry);
 
     if(debugColliders)
     {
