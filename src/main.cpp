@@ -22,6 +22,7 @@ static SDL_Window* window = nullptr;
 static SDL_Renderer* sdlRenderer = nullptr;
 
 static bool gravityEnabled = false;
+static bool manualCamera = true;
 static bool debugColliders = false;
 
 void Init_Enet()
@@ -118,6 +119,8 @@ void intializeGameScene(entt::registry& registry)
   registry.clear();
   createPlayer1Entity(registry, glm::vec2(WINDOW_WIDTH/2, WINDOW_HEIGHT/2));
   createNormalEntity(registry, glm::vec2(WINDOW_WIDTH/2, WINDOW_HEIGHT/2-PLAYER_HEIGHT/2-PLATFORM_HEIGHT/2));
+  createWallEntity(registry, glm::vec2(WALL_WIDTH/2, WINDOW_HEIGHT/2));
+  createWallEntity(registry, glm::vec2(WINDOW_WIDTH - WALL_WIDTH/2, WINDOW_HEIGHT/2));
   const int numPlatformsToGenerate = 100;
   const float startHeight = WINDOW_HEIGHT/2-PLAYER_HEIGHT/2-3*PLATFORM_HEIGHT;
   std::random_device rd;
@@ -140,6 +143,7 @@ void Show_ImGui(entt::registry& registry)
     ImGui::SetNextWindowPos({10, 10});
     ImGui::Begin("Options");
     ImGui::Checkbox("Gravity", &gravityEnabled);
+    ImGui::Checkbox("Manual Camera", &manualCamera);
     ImGui::Checkbox("Debug Colliders", &debugColliders);
     if(ImGui::Button("Reset"))
     {
@@ -192,21 +196,29 @@ int main(int argc, char *argv[])
       {
         quit = true;
       }
-      else if (event.type == SDL_EVENT_MOUSE_WHEEL)
+      else if (event.type == SDL_EVENT_MOUSE_WHEEL && manualCamera)
       {
         camera.zoom *= (event.wheel.y > 0) ? 1.1f : 0.9f; // Zoom in if scrolling up, zoom out if scrolling down
       }
     }
 
-    float prevMouseX = mouseX;
-    float prevMouseY = mouseY;
-    if (SDL_GetMouseState(&mouseX, &mouseY) & SDL_BUTTON_LMASK)
+    if(manualCamera)
     {
-      float deltaX = mouseX - prevMouseX;
-      float deltaY = mouseY - prevMouseY;
-      camera.position.x -= (deltaX / camera.zoom);
-      camera.position.y += (deltaY / camera.zoom);
+      float prevMouseX = mouseX;
+      float prevMouseY = mouseY;
+      if (SDL_GetMouseState(&mouseX, &mouseY) & SDL_BUTTON_LMASK)
+      {
+        float deltaX = mouseX - prevMouseX;
+        float deltaY = mouseY - prevMouseY;
+        camera.position.x -= (deltaX / camera.zoom);
+        camera.position.y += (deltaY / camera.zoom);
+      }
     }
+    else
+    {
+      camera.position.y -= (WINDOW_WIDTH/(3*FPS));
+    }
+
 
     std::cout << camera.zoom << std::endl;
     std::cout << camera.position.x << std::endl;
