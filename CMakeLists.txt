@@ -22,10 +22,20 @@ file(GLOB IMGUI_SOURCES
 set(MAIN_SOURCES
     ${IMGUI_SOURCES}
     "src/Renderer.cpp"
-    "src/Client.cpp"
+    "src/ENetClient.cpp"
+    "src/ENetServer.cpp"
+    "src/GameServer.cpp"
     "src/TextureManager.cpp"
     "src/Constants.cpp"
+    "src/Systems/AnimationSystem.cpp"
+    "src/Systems/CollisionSystem.cpp"
+    "src/Systems/InputSystem.cpp"
+    "src/Systems/PhysicsSystem.cpp"
+    "src/Systems/RenderSystem.cpp"
+    "src/Entity.cpp"
+    "src/Direction.cpp"
+    "src/main.cpp"
     )
 
-add_executable(main "src/main.cpp" ${MAIN_SOURCES})
+add_executable(main ${MAIN_SOURCES})
 target_link_libraries(main PRIVATE SDL3::SDL3 SDL3_image::SDL3_image EnTT::EnTT glm::glm ${ENET_LIBRARIES})

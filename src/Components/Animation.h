@@ -1,7 +1,8 @@
 #pragma once
 
-#include "SDL3/SDL.h"
-#include "glm/vec2.hpp"
+#include "Constants.h"
+#include <SDL3/SDL.h>
+#include <glm/vec2.hpp>
 #include <vector>
 
 struct Animation

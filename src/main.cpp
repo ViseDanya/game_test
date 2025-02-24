@@ -4,8 +4,10 @@
 #include "imgui_impl_sdl3.h"
 #include "imgui_impl_sdlrenderer3.h"
 
+#include "GameServer.h"
 #include "Constants.h"
-#include "Client.hpp"
+#include "ENetClient.h"
+#include "ENetServer.h"
 #include "Entity.h"
 #include "TextureManager.h"
 #include "Systems/RenderSystem.h"
@@ -13,20 +15,20 @@
 #include "Systems/CollisionSystem.h"
 #include "Systems/InputSystem.h"
 #include "Systems/PhysicsSystem.h"
-#include "Game.h"
+#include "Scene.h"
 #include <iostream>
 #include <entt/entt.hpp>
 #include <numeric>
 
-static SDL_Window* window = nullptr;
-static SDL_Renderer* sdlRenderer = nullptr;
+SDL_Window* window = nullptr;
+SDL_Renderer* sdlRenderer = nullptr;
 
 static Camera camera;
 static bool gravityEnabled = false;
 static bool manualCamera = true;
 static bool debugColliders = false;
 
-void Init_Enet()
+void initializeEnet()
 {
   if (enet_initialize() != 0)
   {
@@ -35,7 +37,7 @@ void Init_Enet()
   atexit (enet_deinitialize);
 }
 
-void Init_SDL()
+void initializeSDL()
 {
   if (!SDL_Init(SDL_INIT_VIDEO))
   {
@@ -61,7 +63,7 @@ void Init_SDL()
   }
 }
 
-void Init_ImGui()
+void initializeImGui()
 {
   IMGUI_CHECKVERSION();
   ImGui::CreateContext();
@@ -78,7 +80,7 @@ void resetCamera()
   camera.zoom = 1;
 }
 
-void Show_ImGui(entt::registry& registry)
+void showImGui(entt::registry& registry)
 {
     ImGui_ImplSDLRenderer3_NewFrame();
     ImGui_ImplSDL3_NewFrame();
@@ -105,7 +107,7 @@ void Show_ImGui(entt::registry& registry)
     ImGui_ImplSDLRenderer3_RenderDrawData(ImGui::GetDrawData(), sdlRenderer);
 }
 
-void Cleanup()
+void cleanup()
 {
   ImGui_ImplSDL3_Shutdown();
   ImGui_ImplSDLRenderer3_Shutdown();
@@ -116,10 +118,22 @@ void Cleanup()
 
 int main(int argc, char *argv[])
 {
-  Init_SDL();
-  Init_ImGui();
-  Init_Enet();
+  initializeSDL();
+  initializeImGui();
+  initializeEnet();
   
+  GameServer gameServer;
+  if(argc == 2)
+  {
+    std::string arg = argv[1];
+    if(arg == "server")
+    {
+      gameServer.run();
+    }
+  }
+  
+  else
+  {
   TextureManager::loadAllTextures(sdlRenderer);
   Renderer renderer(sdlRenderer);
 
@@ -131,7 +145,10 @@ int main(int argc, char *argv[])
 
   entt::registry registry;
   createGameScene(registry);
-  resetCamera();
+  resetCamera();  
+
+  ENetClient client;
+  client.connectToServer("localhost");
 
   while (!quit)
   {
@@ -166,12 +183,10 @@ int main(int argc, char *argv[])
       camera.position.y -= (WINDOW_WIDTH/(3*FPS));
     }
 
-
-    std::cout << camera.zoom << std::endl;
-    std::cout << camera.position.x << std::endl;
-
     const bool *keystate = SDL_GetKeyboardState(nullptr);
 
+    client.processEvents();
+    
     resetVelocity(registry, gravityEnabled);
     applyInputToVelocity(registry, keystate, gravityEnabled);
     resetAdjacencies(registry);
@@ -188,7 +203,7 @@ int main(int argc, char *argv[])
     renderColoredEntities(registry, renderer, camera);
     renderSprites(registry, renderer, camera);
 
-    Show_ImGui(registry);
+    showImGui(registry);
 
     if(debugColliders)
     {
@@ -204,6 +219,6 @@ int main(int argc, char *argv[])
       SDL_Delay(1000/FPS - elapsedTime);
     }
   }
-
-  Cleanup();
+  }
+  cleanup();
 }

@@ -1,6 +1,7 @@
 #pragma once
 
-#include <Direction.h>
+#include "Constants.h"
+#include "Direction.h"
 
 struct Trampoline
 {
