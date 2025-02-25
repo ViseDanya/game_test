@@ -22,9 +22,11 @@ file(GLOB IMGUI_SOURCES
 set(MAIN_SOURCES
     ${IMGUI_SOURCES}
     "src/Renderer.cpp"
-    "src/ENetClient.cpp"
-    "src/ENetServer.cpp"
+    "src/Networking/ENetClient.cpp"
+    "src/Networking/ENetServer.cpp"
     "src/GameServer.cpp"
+    "src/GameClient.cpp"
+    "src/LocalGame.cpp"
     "src/TextureManager.cpp"
     "src/Constants.cpp"
     "src/Systems/AnimationSystem.cpp"

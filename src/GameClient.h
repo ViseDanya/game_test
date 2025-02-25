@@ -1,22 +1,21 @@
 #pragma once
 
-#include "Networking/ENetServer.h"
+#include "Networking/ENetClient.h"
 #include "entt/entt.hpp"
 
-class GameServer
+class GameClient
 {
     public:
-    GameServer();
-    ~GameServer() = default;
+    GameClient();
+    ~GameClient() = default;
 
     void run();
 
     private:
-    ENetServer server;
+    ENetClient client;
     entt::registry registry;
     std::unordered_map<entt::entity, entt::entity> clientToServerEntityMap;
 
-    void handleClientConnected(ENetEvent event);
     void handleMessageReceived(ENetEvent event);
-    void handleClientDisconnected(ENetEvent event);
+    void handleServerDisconnected(ENetEvent event);
 };
