@@ -3,19 +3,18 @@
 #include "Networking/ENetServer.h"
 #include "entt/entt.hpp"
 
-class GameServer
+class GameServer : public ENetServer
 {
     public:
-    GameServer();
+    GameServer() = default;
     ~GameServer() = default;
 
     void run();
 
     private:
-    ENetServer server;
     entt::registry registry;
 
-    void handleClientConnected(ENetEvent event);
-    void handleMessageReceived(ENetEvent event);
-    void handleClientDisconnected(ENetEvent event);
+    void handleClientConnected(const ENetEvent& event) override;
+    void handleMessageReceived(const ENetEvent& event) override;
+    void handleClientDisconnected(const ENetEvent& event) override;
 };

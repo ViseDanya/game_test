@@ -1,7 +1,6 @@
 #pragma once
 
 #include <enet/enet.h>
-#include <functional>
 
 class ENetServer
 {
@@ -13,10 +12,9 @@ public:
     void broadcastMessageToClients(const char* data, const int length);
     void processEvents();
 
-    std::function<void(ENetEvent)> handleClientConnected;
-    std::function<void(ENetEvent)> handleMessageReceived;
-    std::function<void(ENetEvent)> handleClientDisconnected;
-
 private:
     ENetHost* server;
+    virtual void handleClientConnected(const ENetEvent& event) = 0;
+    virtual void handleMessageReceived(const ENetEvent& event) = 0;
+    virtual void handleClientDisconnected(const ENetEvent& event) = 0;
 };

@@ -12,16 +12,9 @@
 extern SDL_Renderer* sdlRenderer;
 static Camera camera;
 
-GameServer::GameServer()
-{
-    server.handleClientConnected = [&](ENetEvent event){handleClientConnected(event);};
-    server.handleClientDisconnected = [&](ENetEvent event){handleClientDisconnected(event);};
-    server.handleMessageReceived = [&](ENetEvent event){handleMessageReceived(event);};
-}
-
 void GameServer::run()
 {
-    server.startServer();
+    startServer();
 
     TextureManager::loadAllTextures(sdlRenderer);
     Renderer renderer(sdlRenderer);
@@ -75,7 +68,7 @@ void GameServer::run()
 
     // const bool *keystate = SDL_GetKeyboardState(nullptr);
 
-    server.processEvents();
+    processEvents();
 
     resetVelocity(registry, false);//gravityEnabled);
     // applyInputToVelocity(registry, keystate, false);//gravityEnabled);
@@ -111,7 +104,7 @@ void GameServer::run()
   }
 }
 
-void GameServer::handleClientConnected(ENetEvent event)
+void GameServer::handleClientConnected(const ENetEvent& event)
 {
     std::cout << "handleClientConnected" << std::endl;
     glm::vec2 position = glm::vec2(WINDOW_WIDTH/2, WINDOW_HEIGHT/2);
@@ -128,16 +121,16 @@ void GameServer::handleClientConnected(ENetEvent event)
     message.mutable_create_entity_message()->CopyFrom(createEntityMessage);
     std::string serializedMessage;
     message.SerializeToString(&serializedMessage);
-    server.broadcastMessageToClients(serializedMessage.c_str(), serializedMessage.length());
+    broadcastMessageToClients(serializedMessage.c_str(), serializedMessage.length());
     std::cout << "handleClientConnected done" << std::endl;
 }
 
-void GameServer::handleClientDisconnected(ENetEvent event)
+void GameServer::handleClientDisconnected(const ENetEvent& event)
 {
     
 }
 
-void GameServer::handleMessageReceived(ENetEvent event)
+void GameServer::handleMessageReceived(const ENetEvent& event)
 {
   std::cout << "GameServer::handleMessageReceived" << std::endl;
   game::Message message;

@@ -12,12 +12,6 @@
 extern SDL_Renderer* sdlRenderer;
 static Camera camera;
 
-GameClient::GameClient()
-{
-    client.handleServerDisconnected = [&](ENetEvent event){handleServerDisconnected(event);};
-    client.handleMessageReceived = [&](ENetEvent event){handleMessageReceived(event);};
-}
-
 void GameClient::processAndSendInput(const bool* keystate)
 {
     game::PlayerInputMessage playerInputMessage;
@@ -44,12 +38,12 @@ void GameClient::processAndSendInput(const bool* keystate)
     message.mutable_player_input_message()->CopyFrom(playerInputMessage);
     std::string serializedMessage;
     message.SerializeToString(&serializedMessage);
-    client.sendMessageToServer(serializedMessage.c_str(), serializedMessage.length());
+    sendMessageToServer(serializedMessage.c_str(), serializedMessage.length());
 }
 
 void GameClient::run()
 {
-    client.connectToServer("localhost");
+    connectToServer("localhost");
 
     TextureManager::loadAllTextures(sdlRenderer);
     Renderer renderer(sdlRenderer);
@@ -104,7 +98,7 @@ void GameClient::run()
     const bool *keystate = SDL_GetKeyboardState(nullptr);
     processAndSendInput(keystate);
 
-    client.processEvents();
+    processEvents();
 
     SDL_SetRenderDrawColor(sdlRenderer, 0, 0, 0, 255);
     SDL_RenderClear(sdlRenderer);
@@ -133,12 +127,12 @@ void GameClient::run()
   }
 }
 
-void GameClient::handleServerDisconnected(ENetEvent event)
+void GameClient::handleServerDisconnected(const ENetEvent& event)
 {
     
 }
 
-void GameClient::handleMessageReceived(ENetEvent event)
+void GameClient::handleMessageReceived(const ENetEvent& event)
 {
   std::cout << "GameClient::handleMessageReceived" << std::endl;
   game::Message message;
