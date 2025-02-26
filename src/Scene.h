@@ -16,17 +16,17 @@ entt::entity generatePlatform(entt::registry& registry, glm::vec2 position)
   std::uniform_int_distribution<> distr(0, NumPlatformTypes-1);
   switch(distr(gen))
   {
-    case(NORMAL):
+    case(PlatformType::NORMAL):
       return createNormalEntity(registry, position);
-    case(CONVEYOR_LEFT):
+    case(PlatformType::CONVEYOR_LEFT):
       return createConveyorLeftEntity(registry, position);
-    case(CONVEYOR_RIGHT):
+    case(PlatformType::CONVEYOR_RIGHT):
       return createConveyorRightEntity(registry, position);
-    case(TRAMPOLINE):
+    case(PlatformType::TRAMPOLINE):
       return createTrampolineEntity(registry, position);
-    case(SPIKES):
+    case(PlatformType::SPIKES):
       return createSpikesEntity(registry, position);
-    case(FAKE):
+    case(PlatformType::FAKE):
       return createFakeEntity(registry, position);
     default:
       return createNormalEntity(registry, position);

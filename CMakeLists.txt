@@ -9,9 +9,14 @@ find_package(SDL3_image REQUIRED)
 find_package(ENet REQUIRED)
 find_package(EnTT REQUIRED)
 find_package(glm REQUIRED)
+find_package(Protobuf CONFIG REQUIRED)
+
+set(PROTO_FILES
+    "src/proto/game.proto"
+)
 
 include_directories("src/" "src/Components" "src/imgui/" "src/imgui/backends")
-include_directories(${ENET_INCLUDE_DIRS})
+include_directories(${ENET_INCLUDE_DIRS} ${Protobuf_INCLUDE_DIRS})
 
 file(GLOB IMGUI_SOURCES
     "src/imgui/*.cpp"
@@ -40,4 +45,14 @@ set(MAIN_SOURCES
     )
 
 add_executable(main ${MAIN_SOURCES})
-target_link_libraries(main PRIVATE SDL3::SDL3 SDL3_image::SDL3_image EnTT::EnTT glm::glm ${ENET_LIBRARIES})
+
+file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/generated)
+
+protobuf_generate(TARGET main
+PROTOS ${PROTO_FILES}
+PROTOC_OUT_DIR "${CMAKE_CURRENT_BINARY_DIR}/generated"
+IMPORT_DIRS "src/proto"
+)
+
+target_include_directories(main PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/generated")
+target_link_libraries(main PRIVATE SDL3::SDL3 SDL3_image::SDL3_image EnTT::EnTT glm::glm ${ENET_LIBRARIES} protobuf::libprotobuf)

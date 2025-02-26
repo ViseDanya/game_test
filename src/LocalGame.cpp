@@ -63,7 +63,7 @@ void LocalGame::run()
     float mouseX;
     float mouseY;
   
-    entt::registry registry;
+    // entt::registry registry;
     createGameScene(registry);
     resetCamera();  
     

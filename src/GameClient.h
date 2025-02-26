@@ -14,8 +14,11 @@ class GameClient
     private:
     ENetClient client;
     entt::registry registry;
-    std::unordered_map<entt::entity, entt::entity> clientToServerEntityMap;
+    entt::entity playerEntity;
+    std::unordered_map<entt::entity, entt::entity> serverToClientEntityMap;
 
     void handleMessageReceived(ENetEvent event);
     void handleServerDisconnected(ENetEvent event);
+
+    void processAndSendInput(const bool* keystate);
 };

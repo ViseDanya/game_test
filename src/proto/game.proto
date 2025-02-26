@@ -1,0 +1,53 @@
+syntax = "proto3";
+    
+package game;
+
+enum MessageType
+{
+  PLAYER_INPUT_MESSAGE = 0;
+  CREATE_ENTITY_MESSAGE = 1;
+}
+
+enum EntityType
+{
+  PLAYER=0;
+  NORMAL_PLATFORM=1;
+  CONVEYOR_RIGHT=2;
+  CONVEYOR_LEFT=3;
+  TRAMPOLINE=4;
+  WALL=5;
+  SPIKES=6;
+  FAKE_PLATFORM=7;
+}
+
+message vec2
+{
+  float x = 1;
+  float y = 2;
+}
+
+message PlayerInputMessage 
+{
+  uint32 entity = 1;
+  bool up = 2;
+  bool down = 3;
+  bool left = 4;
+  bool right = 5;
+}
+
+message CreateEntityMessage 
+{
+  uint32 entity = 1;
+  EntityType entity_type = 2;
+  vec2 position = 3;
+}
+
+message Message
+{
+  MessageType message_type = 1;
+  oneof message 
+  {
+    PlayerInputMessage player_input_message = 2;
+    CreateEntityMessage create_entity_message = 3;
+  }
+}

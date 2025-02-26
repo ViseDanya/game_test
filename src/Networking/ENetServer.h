@@ -10,7 +10,7 @@ public:
     ~ENetServer();
     
     void startServer();
-    void broadcastMessageToClients(const uint8_t* data, const int length);
+    void broadcastMessageToClients(const char* data, const int length);
     void processEvents();
 
     std::function<void(ENetEvent)> handleClientConnected;

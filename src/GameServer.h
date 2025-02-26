@@ -14,7 +14,6 @@ class GameServer
     private:
     ENetServer server;
     entt::registry registry;
-    std::unordered_map<entt::entity, entt::entity> clientToServerEntityMap;
 
     void handleClientConnected(ENetEvent event);
     void handleMessageReceived(ENetEvent event);

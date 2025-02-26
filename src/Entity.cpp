@@ -1,3 +1,4 @@
+#include "Entity.h"
 #include "Components/Box.h"
 #include "Components/Sprite.h"
 #include "Components/Velocity.h"
@@ -13,8 +14,32 @@
 #include "TextureManager.h"
 #include <entt/entt.hpp>
 
+entt::entity createEntity(const EntityType entityType, entt::registry& registry, const glm::vec2& position)
+{
+  switch(entityType)
+  {
+    case EntityType::PLAYER:
+      return createPlayerEntity(registry, position);
+    case EntityType::NORMAL_PLATFORM:
+      return createNormalEntity(registry, position);
+    case EntityType::CONVEYOR_RIGHT:
+      return createConveyorRightEntity(registry, position);
+    case EntityType::CONVEYOR_LEFT:
+      return createConveyorLeftEntity(registry, position);
+    case EntityType::TRAMPOLINE:
+      return createTrampolineEntity(registry, position);
+    case EntityType::WALL:
+      return createWallEntity(registry, position);
+    case EntityType::SPIKES:
+      return createSpikesEntity(registry, position);
+    case EntityType::FAKE_PLATFORM:
+      return createFakeEntity(registry, position);
+  }
+}
+
 entt::entity createPlayerEntity(entt::registry& registry, const glm::vec2& position)
 {
+  std::cout << "createPlayerEntity" << std::endl;
     const entt::entity playerEntity = registry.create();
     const Box& box = registry.emplace<Box>(playerEntity, 
       Box(position, glm::vec2(PLAYER_WIDTH/2, PLAYER_WIDTH/2)));

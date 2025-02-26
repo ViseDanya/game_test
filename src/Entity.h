@@ -3,6 +3,12 @@
 #include <glm/vec2.hpp>
 #include <entt/entt.hpp>
 
+enum class EntityType
+{
+    PLAYER, NORMAL_PLATFORM, CONVEYOR_RIGHT, CONVEYOR_LEFT, TRAMPOLINE, WALL, SPIKES, FAKE_PLATFORM
+};
+
+entt::entity createEntity(const EntityType entityType, entt::registry& registry, const glm::vec2& position);
 entt::entity createPlayerEntity(entt::registry& registry, const glm::vec2& position);
 entt::entity createPlayer1Entity(entt::registry& registry, const glm::vec2& position);
 entt::entity createPlayer2Entity(entt::registry& registry, const glm::vec2& position);

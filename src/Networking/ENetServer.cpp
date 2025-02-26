@@ -35,7 +35,7 @@ void ENetServer::processEvents()
 {
     ENetEvent enetEvent;
  
-    while (enet_host_service (server, & enetEvent, 0) > 0)
+    while (enet_host_service (server, &enetEvent, 0) > 0)
     {
         switch (enetEvent.type)
         {
@@ -46,11 +46,13 @@ void ENetServer::processEvents()
             /* Store any relevant client information here. */
             // event.peer -> data = "Client information";
             handleClientConnected(enetEvent);
+            std::cout << "Done processing client connection." << std::endl;
             break;
      
         case ENET_EVENT_TYPE_RECEIVE:
+            std::cout << "Packet received" << std::endl;
             std::cout << "A packet of length " << enetEvent.packet->dataLength <<
-            " containing " << enetEvent.packet->data <<
+            // " containing " << enetEvent.packet->data <<
             " was received from " << enetEvent.peer->data <<
             " on channel " << enetEvent.channelID << std::endl;
      
@@ -75,7 +77,7 @@ void ENetServer::processEvents()
     }
 }
 
-void ENetServer::broadcastMessageToClients(const uint8_t* data, const int length)
+void ENetServer::broadcastMessageToClients(const char* data, const int length)
 {
     ENetPacket* packet = enet_packet_create ((const void*) data, length, ENET_PACKET_FLAG_RELIABLE);
     enet_host_broadcast (server, 0, packet);
