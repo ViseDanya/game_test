@@ -45,6 +45,7 @@ void ENetServer::processEvents()
      
             /* Store any relevant client information here. */
             // event.peer -> data = "Client information";
+            clients[enetEvent.peer->incomingPeerID] = enetEvent.peer;
             handleClientConnected(enetEvent);
             std::cout << "Done processing client connection." << std::endl;
             break;
@@ -66,6 +67,7 @@ void ENetServer::processEvents()
         case ENET_EVENT_TYPE_DISCONNECT:
             std::cout << "Client " << enetEvent.peer->data << " disconnected." << std::endl;
             
+            clients.erase(enetEvent.peer->incomingPeerID);
             handleClientDisconnected(enetEvent);
 
             /* Reset the peer's client information. */
@@ -82,4 +84,14 @@ void ENetServer::broadcastMessageToClients(const char* data, const int length)
     ENetPacket* packet = enet_packet_create ((const void*) data, length, ENET_PACKET_FLAG_RELIABLE);
     enet_host_broadcast (server, 0, packet);
     enet_host_flush(server);
+}
+
+void ENetServer::sendMessageToClient(enet_uint16 clientID, const char* data, const int length)
+{
+    if(clients.find(clientID) != clients.end())
+    {
+        ENetPacket* packet = enet_packet_create ((const void*) data, length, ENET_PACKET_FLAG_RELIABLE);
+        enet_peer_send (clients[clientID], 0, packet);
+        enet_host_flush(server);
+    }
 }

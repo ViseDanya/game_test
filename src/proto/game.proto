@@ -6,6 +6,7 @@ enum MessageType
 {
   PLAYER_INPUT_MESSAGE = 0;
   CREATE_ENTITY_MESSAGE = 1;
+  DYNAMIC_ENTITY_UPDATE_MESSAGE = 2;
 }
 
 enum EntityType
@@ -28,11 +29,10 @@ message vec2
 
 message PlayerInputMessage 
 {
-  uint32 entity = 1;
-  bool up = 2;
-  bool down = 3;
-  bool left = 4;
-  bool right = 5;
+  bool up = 1;
+  bool down = 2;
+  bool left = 3;
+  bool right = 4;
 }
 
 message CreateEntityMessage 
@@ -42,6 +42,14 @@ message CreateEntityMessage
   vec2 position = 3;
 }
 
+message DynamicEntityUpdateMessage 
+{
+  uint32 entity = 1;
+  vec2 position = 2;
+  vec2 velocity = 3;
+  bool is_on_floor = 4;
+}
+
 message Message
 {
   MessageType message_type = 1;
@@ -49,5 +57,6 @@ message Message
   {
     PlayerInputMessage player_input_message = 2;
     CreateEntityMessage create_entity_message = 3;
+    DynamicEntityUpdateMessage dynamic_entity_update_messsage = 4;
   }
 }
