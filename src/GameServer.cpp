@@ -247,4 +247,16 @@ void GameServer::broadcastUpdatesToClients()
     message.SerializeToString(&serializedMessage);
     broadcastMessageToClients(serializedMessage.c_str(), serializedMessage.length());
   }
+
+  game::CameraUpdateMessage cameraUpdateMessage;
+  game::vec2* cameraPosition = cameraUpdateMessage.mutable_position();
+  cameraPosition->set_x(camera.position.x);
+  cameraPosition->set_y(camera.position.y);
+  cameraUpdateMessage.set_zoom(camera.zoom);
+  game::Message message;
+    message.set_message_type(game::MessageType::CAMERA_UPDATE_MESSAGE);
+    message.mutable_camera_update_message()->CopyFrom(cameraUpdateMessage);
+    std::string serializedMessage;
+    message.SerializeToString(&serializedMessage);
+    broadcastMessageToClients(serializedMessage.c_str(), serializedMessage.length());
 }
