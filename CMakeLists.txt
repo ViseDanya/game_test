@@ -15,7 +15,7 @@ set(PROTO_FILES
     "src/proto/game.proto"
 )
 
-include_directories("src/" "src/Components" "src/imgui/" "src/imgui/backends")
+include_directories("src/" "src/Components/" "src/Networking/" "src/Systems/" "src/imgui/" "src/imgui/backends/")
 include_directories(${ENET_INCLUDE_DIRS} ${Protobuf_INCLUDE_DIRS})
 
 file(GLOB IMGUI_SOURCES
@@ -29,6 +29,7 @@ set(MAIN_SOURCES
     "src/Renderer.cpp"
     "src/Networking/ENetClient.cpp"
     "src/Networking/ENetServer.cpp"
+    "src/Networking/Message.cpp"
     "src/GameServer.cpp"
     "src/GameClient.cpp"
     "src/LocalGame.cpp"

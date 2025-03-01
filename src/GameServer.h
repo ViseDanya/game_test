@@ -24,4 +24,7 @@ class GameServer : public ENetServer
     void handleClientConnected(const ENetEvent& event) override;
     void handleMessageReceived(const ENetEvent& event) override;
     void handleClientDisconnected(const ENetEvent& event) override;
+
+    void sendMessageToClient(enet_uint16 clientID, const game::Message& message);
+    void broadcastMessageToClients(const game::Message& message);
 };

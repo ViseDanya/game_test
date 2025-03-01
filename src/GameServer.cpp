@@ -9,6 +9,7 @@
 #include "TextureManager.h"
 #include "Velocity.h"
 #include "Adjacencies.h"
+#include "Networking/Message.h"
 
 extern SDL_Renderer* sdlRenderer;
 static Camera camera;
@@ -122,37 +123,18 @@ void GameServer::handleClientConnected(const ENetEvent& event)
     for (const auto& pair : players) 
     {
       entt::entity player = pair.second;
-      game::CreateEntityMessage createEntityMessage;
-      createEntityMessage.set_entity(entt::to_integral(player));
-      createEntityMessage.set_entity_type(game::PLAYER);
-      game::vec2* pos = createEntityMessage.mutable_position();
       const Box& box = registry.get<Box>(player);
-      pos->set_x(box.center.x);
-      pos->set_y(box.center.y);
-      game::Message message;
-      message.set_message_type(game::MessageType::CREATE_ENTITY_MESSAGE);
-      message.mutable_create_entity_message()->CopyFrom(createEntityMessage);
-      std::string serializedMessage;
-      message.SerializeToString(&serializedMessage);
-      sendMessageToClient(event.peer->incomingPeerID, serializedMessage.c_str(), serializedMessage.length());
+      game::Message createEntityMessage = createCreateEntityMessage(player, EntityType::PLAYER, box.center);
+      sendMessageToClient(event.peer->incomingPeerID, createEntityMessage);
     }
 
     glm::vec2 position = glm::vec2(WINDOW_WIDTH/2, WINDOW_HEIGHT/2);
     entt::entity player = createPlayerEntity(registry, position);
     players[event.peer->incomingPeerID] = player;
 
-    game::CreateEntityMessage createEntityMessage;
-    createEntityMessage.set_entity(entt::to_integral(player));
-    createEntityMessage.set_entity_type(game::PLAYER);
-    game::vec2* pos = createEntityMessage.mutable_position();
-    pos->set_x(position.x);
-    pos->set_y(position.y);
-    game::Message message;
-    message.set_message_type(game::MessageType::CREATE_ENTITY_MESSAGE);
-    message.mutable_create_entity_message()->CopyFrom(createEntityMessage);
-    std::string serializedMessage;
-    message.SerializeToString(&serializedMessage);
-    broadcastMessageToClients(serializedMessage.c_str(), serializedMessage.length());
+    game::Message createEntityMessage = createCreateEntityMessage(player, EntityType::PLAYER, position);
+    broadcastMessageToClients(createEntityMessage);
+
     std::cout << "handleClientConnected done" << std::endl;
 }
 
@@ -223,40 +205,24 @@ void GameServer::broadcastUpdatesToClients()
   for (const auto& pair : players) 
   {
     entt::entity player = pair.second;
-
-    game::DynamicEntityUpdateMessage dynamicEntityUpdateMessage;
-    dynamicEntityUpdateMessage.set_entity(entt::to_integral(player));
-
-    const Box& box = registry.get<Box>(player);
-    game::vec2* position = dynamicEntityUpdateMessage.mutable_position();
-    position->set_x(box.center.x);
-    position->set_y(box.center.y);
-
-    const Velocity& velocityComponent = registry.get<Velocity>(player);
-    game::vec2* velocity = dynamicEntityUpdateMessage.mutable_velocity();
-    velocity->set_x(velocityComponent.velocity.x);
-    velocity->set_y(velocityComponent.velocity.y);
-
-    const Adjacencies& adjacencies= registry.get<Adjacencies>(player);
-    dynamicEntityUpdateMessage.set_is_on_floor(adjacencies.isOnFloor);
-
-    game::Message message;
-    message.set_message_type(game::MessageType::DYNAMIC_ENTITY_UPDATE_MESSAGE);
-    message.mutable_dynamic_entity_update_messsage()->CopyFrom(dynamicEntityUpdateMessage);
-    std::string serializedMessage;
-    message.SerializeToString(&serializedMessage);
-    broadcastMessageToClients(serializedMessage.c_str(), serializedMessage.length());
+    game::Message playerUpdateMessage = createDynamicEntityUpdateMessage(registry, player);
+    broadcastMessageToClients(playerUpdateMessage);
   }
 
-  game::CameraUpdateMessage cameraUpdateMessage;
-  game::vec2* cameraPosition = cameraUpdateMessage.mutable_position();
-  cameraPosition->set_x(camera.position.x);
-  cameraPosition->set_y(camera.position.y);
-  cameraUpdateMessage.set_zoom(camera.zoom);
-  game::Message message;
-    message.set_message_type(game::MessageType::CAMERA_UPDATE_MESSAGE);
-    message.mutable_camera_update_message()->CopyFrom(cameraUpdateMessage);
-    std::string serializedMessage;
-    message.SerializeToString(&serializedMessage);
-    broadcastMessageToClients(serializedMessage.c_str(), serializedMessage.length());
+  game::Message cameraUpdateMessage = createCameraUpdateMessage(camera);
+  broadcastMessageToClients(cameraUpdateMessage);
+}
+
+void GameServer::sendMessageToClient(enet_uint16 clientID, const game::Message& message)
+{
+  std::string serializedMessage;
+  message.SerializeToString(&serializedMessage);
+  ENetServer::sendMessageToClient(clientID, serializedMessage.c_str(), serializedMessage.length());
+}
+
+void GameServer::broadcastMessageToClients(const game::Message& message)
+{
+  std::string serializedMessage;
+  message.SerializeToString(&serializedMessage);
+  ENetServer::broadcastMessageToClients(serializedMessage.c_str(), serializedMessage.length());
 }

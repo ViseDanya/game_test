@@ -186,11 +186,11 @@ void GameClient::handleMessageReceived(const ENetEvent& event)
       std::cout << "Received cameraUpdateMessage: " << std::endl;
       camera.position.x = cameraUpdateMessage.position().x();
       camera.position.y = cameraUpdateMessage.position().y(); 
-      camera.zoom = cameraUpdateMessage.zoom();     
+      camera.zoom = cameraUpdateMessage.zoom();
     }
     default:
     {
-      std::cerr << "Unknown message type!" << std::endl;
+      std::cerr << "Unknown message type!: " << message.message_type() << std::endl;
       break;
     }
   }
