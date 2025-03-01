@@ -10,8 +10,8 @@ const int WINDOW_HEIGHT = 352;
 constexpr int PLAYER_WIDTH = 32;
 constexpr int PLAYER_HEIGHT = 32;
 
-constexpr int WALL_WIDTH = 18;
-constexpr int WALL_HEIGHT = 400;
+constexpr int WALL_WIDTH = 16;
+constexpr int WALL_HEIGHT = 352;
 
 constexpr int PLATFORM_WIDTH = 96;
 constexpr int PLATFORM_HEIGHT = 16;

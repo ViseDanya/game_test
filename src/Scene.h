@@ -68,17 +68,9 @@ void createStartingSection(entt::registry& registry)
     createEvenlySpacedPlatforms(registry, WINDOW_HEIGHT/2-PLAYER_HEIGHT/2-PLATFORM_HEIGHT/2-3*PLATFORM_HEIGHT, 3);
 }
 
-void createSection(entt::registry& registry, float startHeight)
-{
-    createWallEntity(registry, glm::vec2(WALL_WIDTH/2, startHeight - WINDOW_HEIGHT/2));
-    createWallEntity(registry, glm::vec2(WINDOW_WIDTH - WALL_WIDTH/2, startHeight - WINDOW_HEIGHT/2));
-    createEvenlySpacedPlatforms(registry, startHeight, 8);
-}
-
 void createGameScene(entt::registry& registry)
 {
   registry.clear();
   createPlayer1Entity(registry, glm::vec2(WINDOW_WIDTH/2, WINDOW_HEIGHT/2));
   createStartingSection(registry);
-  createSection(registry, -2*PLATFORM_HEIGHT);
 }

@@ -13,19 +13,18 @@
 #include <imgui_impl_sdlrenderer3.h>
 
 extern SDL_Renderer* sdlRenderer;
-static Camera camera;
 
 static bool gravityEnabled = false;
 static bool manualCamera = true;
 static bool debugColliders = false;
 
-void resetCamera()
+void LocalGame::resetCamera()
 {
   camera.position = glm::vec2(WINDOW_WIDTH/2, WINDOW_HEIGHT/2);
   camera.zoom = 1;
 }
 
-void showImGui(entt::registry& registry)
+void LocalGame::showImGui()
 {
     ImGui_ImplSDLRenderer3_NewFrame();
     ImGui_ImplSDL3_NewFrame();
@@ -45,11 +44,28 @@ void showImGui(entt::registry& registry)
     {
       createGameScene(registry);
       resetCamera();
+      platformSpawnPoint -= 2.5*PLATFORM_HEIGHT;
+      wallSpawnPoint -= WALL_HEIGHT/2;
+      spawnPlatform();
+      spawnWalls();
     }
     ImGui::End();
 
     ImGui::Render();
     ImGui_ImplSDLRenderer3_RenderDrawData(ImGui::GetDrawData(), sdlRenderer);
+}
+
+void LocalGame::spawnPlatform()
+{
+  createEvenlySpacedPlatforms(registry, platformSpawnPoint, 1);
+  platformSpawnPoint -= 3*PLATFORM_HEIGHT;
+}
+
+void LocalGame::spawnWalls()
+{
+  createWallEntity(registry, glm::vec2(WALL_WIDTH/2, wallSpawnPoint));
+  createWallEntity(registry, glm::vec2(WINDOW_WIDTH - WALL_WIDTH/2, wallSpawnPoint));
+  wallSpawnPoint -= WALL_HEIGHT;
 }
 
 void LocalGame::run()
@@ -61,12 +77,15 @@ void LocalGame::run()
     SDL_Event event;
   
     float mouseX;
-    float mouseY;
-  
-    // entt::registry registry;
-    createGameScene(registry);
-    resetCamera();  
+    float mouseY; 
     
+    createGameScene(registry);
+    resetCamera();
+    platformSpawnPoint -= 2.5*PLATFORM_HEIGHT;
+    wallSpawnPoint -= WALL_HEIGHT/2;
+    spawnPlatform();
+    spawnWalls();
+
     while (!quit)
     {
       Uint64 frameStartTime = SDL_GetTicks();
@@ -101,6 +120,15 @@ void LocalGame::run()
       }
   
       const bool *keystate = SDL_GetKeyboardState(nullptr);
+
+      if(camera.position.y - platformSpawnPoint < 2*WINDOW_HEIGHT)
+      {
+        spawnPlatform();
+      }
+      if(camera.position.y - wallSpawnPoint < 2*WINDOW_HEIGHT)
+      {
+        spawnWalls();
+      }
         
       resetVelocity(registry, gravityEnabled);
       applyInputToVelocity(registry, keystate, gravityEnabled);
@@ -118,7 +146,7 @@ void LocalGame::run()
       renderColoredEntities(registry, renderer, camera);
       renderSprites(registry, renderer, camera);
   
-      showImGui(registry);
+      showImGui();
   
       if(debugColliders)
       {

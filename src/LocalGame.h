@@ -1,6 +1,8 @@
 #pragma once
 
 #include "entt/entt.hpp"
+#include <glm/vec2.hpp>
+#include "Camera.h"
 
 class LocalGame
 {
@@ -11,5 +13,13 @@ class LocalGame
     void run();
 
     private:
+    void resetCamera();
+    void showImGui();
+    void spawnPlatform();
+    void spawnWalls();
+
     entt::registry registry;
+    Camera camera;
+    float platformSpawnPoint;
+    float wallSpawnPoint;
 };
