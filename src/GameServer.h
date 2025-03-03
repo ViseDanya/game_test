@@ -4,6 +4,9 @@
 #include "game.pb.h"
 #include "entt/entt.hpp"
 #include <unordered_map>
+#include <imgui.h>
+#include <imgui_impl_sdl3.h>
+#include <imgui_impl_sdlrenderer3.h>
 
 class GameServer : public ENetServer
 {
@@ -27,4 +30,15 @@ class GameServer : public ENetServer
 
     void sendMessageToClient(enet_uint16 clientID, const game::Message& message);
     void broadcastMessageToClients(const game::Message& message);
+
+    void resetCamera();
+    void showImGui();
+    void spawnPlatform();
+    void spawnWalls();
+    void createGameScene();
+
+    float platformSpawnPoint;
+    float wallSpawnPoint;
+
+    void onEntityCreated(entt::entity entity);
 };

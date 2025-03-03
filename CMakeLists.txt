@@ -42,6 +42,7 @@ set(MAIN_SOURCES
     "src/Systems/RenderSystem.cpp"
     "src/Entity.cpp"
     "src/Direction.cpp"
+    "src/Scene.cpp"
     "src/main.cpp"
     )
 

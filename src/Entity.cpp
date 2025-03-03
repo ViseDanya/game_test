@@ -50,6 +50,7 @@ entt::entity createPlayerEntity(entt::registry& registry, const glm::vec2& posit
     registry.emplace<Adjacencies>(playerEntity);
     registry.emplace<Animation>(playerEntity, Animation::createPlayerIdleAnimation());
     registry.emplace<Animator>(playerEntity, Animator::createPlayerAnimtor());
+    registry.emplace<TypeComponent>(playerEntity, EntityType::PLAYER);
     return playerEntity;
 }
 
@@ -93,6 +94,7 @@ entt::entity createNormalEntity(entt::registry& registry, const glm::vec2& posit
       Box(position, glm::vec2(PLATFORM_WIDTH/2, PLATFORM_HEIGHT/2)));
     registry.emplace<Collider>(normalEntity, Box(glm::ZERO, box.size), true, true);
     registry.emplace<Sprite>(normalEntity, TextureManager::normalTexture, SDL_FRect{0,0,PLATFORM_WIDTH,PLATFORM_HEIGHT});
+    registry.emplace<TypeComponent>(normalEntity, EntityType::NORMAL_PLATFORM);
     return normalEntity;
 }
 
@@ -113,6 +115,7 @@ entt::entity createConveyorRightEntity(entt::registry& registry, const glm::vec2
     registry.emplace<Sprite>(conveyorEntity, TextureManager::conveyorRightTexture, SDL_FRect{0,0,PLATFORM_WIDTH,PLATFORM_HEIGHT});
     Conveyor& conveyor = registry.get<Conveyor>(conveyorEntity);
     conveyor.speed = PLAYER_SPEED/2;
+    registry.emplace<TypeComponent>(conveyorEntity, EntityType::CONVEYOR_RIGHT);
     return conveyorEntity;
 }
 
@@ -122,6 +125,7 @@ entt::entity createConveyorLeftEntity(entt::registry& registry, const glm::vec2&
     registry.emplace<Sprite>(conveyorEntity, TextureManager::conveyorLeftTexture, SDL_FRect{0,0,PLATFORM_WIDTH,PLATFORM_HEIGHT});
     Conveyor& conveyor = registry.get<Conveyor>(conveyorEntity);
     conveyor.speed = -PLAYER_SPEED/2;
+    registry.emplace<TypeComponent>(conveyorEntity, EntityType::CONVEYOR_LEFT);
     return conveyorEntity;
 }
 
@@ -134,6 +138,7 @@ entt::entity createTrampolineEntity(entt::registry& registry, const glm::vec2& p
     registry.emplace<Sprite>(trampoline, TextureManager::trampolineTexture, SDL_FRect{0,0,PLATFORM_WIDTH,TRAMPOLINE_HEIGHT});
     registry.emplace<Trampoline>(trampoline);
     registry.emplace<Animation>(trampoline, Animation::createTrampolineAnimation());
+    registry.emplace<TypeComponent>(trampoline, EntityType::TRAMPOLINE);
     return trampoline;
 }
 
@@ -144,6 +149,7 @@ entt::entity createWallEntity(entt::registry& registry, const glm::vec2& positio
       glm::vec2(WALL_WIDTH/2, WINDOW_HEIGHT/2));
     registry.emplace<Collider>(wall, Box(glm::ZERO, box.size));
     registry.emplace<Sprite>(wall, TextureManager::wallTexture,SDL_FRect{0,0,WALL_WIDTH,WALL_HEIGHT});
+    registry.emplace<TypeComponent>(wall, EntityType::WALL);
     return wall;
 }
 
@@ -153,6 +159,7 @@ entt::entity createSpikesEntity(entt::registry& registry, const glm::vec2& posit
     registry.emplace<Box>(spikes, Box(position, glm::vec2(PLATFORM_WIDTH/2, SPIKES_HEIGHT/2)));
     registry.emplace<Collider>(spikes, Box(glm::vec2(0,-SPIKES_HEIGHT/4), glm::vec2(PLATFORM_WIDTH/2,7)), true, true);
     registry.emplace<Sprite>(spikes, TextureManager::spikesTexture, SDL_FRect{0,0,PLATFORM_WIDTH,SPIKES_HEIGHT});
+    registry.emplace<TypeComponent>(spikes, EntityType::SPIKES);
     return spikes;
 }
 
@@ -165,5 +172,6 @@ entt::entity createFakeEntity(entt::registry& registry, const glm::vec2& positio
     registry.emplace<Sprite>(fakeEntity, TextureManager::fakeTexture, SDL_FRect{0,0,PLATFORM_WIDTH,FAKE_HEIGHT});
     registry.emplace<Animation>(fakeEntity, Animation::createFakeAnimation());
     registry.emplace<Fake>(fakeEntity);
+    registry.emplace<TypeComponent>(fakeEntity, EntityType::FAKE_PLATFORM);
     return fakeEntity;
 }

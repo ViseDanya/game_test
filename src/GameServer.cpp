@@ -10,14 +10,90 @@
 #include "Velocity.h"
 #include "Adjacencies.h"
 #include "Networking/Message.h"
+#include "Scene.h"
+#include <imgui.h>
+#include <imgui_impl_sdl3.h>
+#include <imgui_impl_sdlrenderer3.h>
 
 extern SDL_Renderer* sdlRenderer;
 static Camera camera;
-static bool gravity_enabled = false;
+static bool gravityEnabled = false;
+static bool manualCamera = true;
+static bool debugColliders = true;
+static bool gameStarted = false;
+
+void GameServer::createGameScene()
+{
+  createNormalEntity(registry, glm::vec2(WINDOW_WIDTH/2, WINDOW_HEIGHT/2 - PLAYER_HEIGHT/2 - PLATFORM_HEIGHT/2));
+  resetCamera();
+  platformSpawnPoint = WINDOW_HEIGHT/2 - PLAYER_HEIGHT/2 - PLATFORM_HEIGHT/2 - 3*PLATFORM_HEIGHT;
+  for(int i = 0; i < 10; i++)
+  {
+    spawnPlatform();
+  }
+
+  wallSpawnPoint = WALL_HEIGHT/2;
+  spawnWalls();
+}
+
+void GameServer::spawnPlatform()
+{
+  createEvenlySpacedPlatforms(registry, platformSpawnPoint, 1);
+  platformSpawnPoint -= 3*PLATFORM_HEIGHT;
+}
+
+void GameServer::spawnWalls()
+{
+  createWallEntity(registry, glm::vec2(WALL_WIDTH/2, wallSpawnPoint));
+  createWallEntity(registry, glm::vec2(WINDOW_WIDTH - WALL_WIDTH/2, wallSpawnPoint));
+  wallSpawnPoint -= WALL_HEIGHT;
+}
+
+void GameServer::resetCamera()
+{
+  camera.position = glm::vec2(WINDOW_WIDTH/2, WINDOW_HEIGHT/2);
+  camera.zoom = 1;
+}
+
+void GameServer::showImGui()
+{
+    ImGui_ImplSDLRenderer3_NewFrame();
+    ImGui_ImplSDL3_NewFrame();
+    ImGui::NewFrame();
+    ImGui::SetNextWindowSize({0, 0});
+    ImGui::SetNextWindowPos({10, 10});
+    ImGui::Begin("Options");
+    ImGui::Checkbox("Gravity", &gravityEnabled);
+    ImGui::Checkbox("Manual Camera", &manualCamera);
+    ImGui::Checkbox("Debug Colliders", &debugColliders);
+    if(ImGui::Button("Reset Test Scene"))
+    {
+      createTestScene(registry);
+      resetCamera();
+    }
+    if(ImGui::Button("Start Game"))
+    {
+      createGameScene();
+      gameStarted = true;
+    }
+    ImGui::End();
+
+    ImGui::Render();
+    ImGui_ImplSDLRenderer3_RenderDrawData(ImGui::GetDrawData(), sdlRenderer);
+}
+
+void GameServer::onEntityCreated(entt::entity entity)
+{
+  EntityType type = registry.get<TypeComponent>(entity).type;
+  Box& box = registry.get<Box>(entity);
+  game::Message createEntityMessage = createCreateEntityMessage(entity, type, box.center);
+  broadcastMessageToClients(createEntityMessage);
+}
 
 void GameServer::run()
 {
     startServer();
+    registry.on_construct<TypeComponent>().connect<&GameServer::onEntityCreated>(*this);
 
     TextureManager::loadAllTextures(sdlRenderer);
     Renderer renderer(sdlRenderer);
@@ -31,17 +107,12 @@ void GameServer::run()
   camera.position = glm::vec2(WINDOW_WIDTH/2, WINDOW_HEIGHT/2);
   camera.zoom = 1;
 
-  bool manualCamera = true;
-//   entt::registry registry;
-//   createGameScene(registry);
-//   resetCamera();  
-
   while (!quit)
   {
     Uint64 frameStartTime = SDL_GetTicks();
     while (SDL_PollEvent(&event) != 0)
     {
-    //   ImGui_ImplSDL3_ProcessEvent(&event);
+      ImGui_ImplSDL3_ProcessEvent(&event);
       if (event.type == SDL_EVENT_QUIT)
       {
         quit = true;
@@ -69,9 +140,17 @@ void GameServer::run()
       camera.position.y -= (WINDOW_WIDTH/(3*FPS));
     }
 
-    resetVelocity(registry, false);//gravityEnabled);
+    if(gameStarted && camera.position.y - platformSpawnPoint < 2*WINDOW_HEIGHT)
+    {
+      spawnPlatform();
+    }
+    if(gameStarted && camera.position.y - wallSpawnPoint < 2*WINDOW_HEIGHT)
+    {
+      spawnWalls();
+    }
+    
+    resetVelocity(registry, gravityEnabled);
 
-    // applyInputToVelocity(registry, keystate, false);//gravityEnabled);
     processEvents();
 
     for (const auto& [clientID, playerInputMessage] : playerInputState) 
@@ -98,12 +177,12 @@ void GameServer::run()
     renderColoredEntities(registry, renderer, camera);
     renderSprites(registry, renderer, camera);
 
-    // showImGui(registry);
+    showImGui();
 
-    // if(debugColliders)
-    // {
-    //   renderDebugColliders(registry, renderer, camera);
-    // }
+    if(debugColliders)
+    {
+      renderDebugColliders(registry, renderer, camera);
+    }
 
     SDL_RenderPresent(sdlRenderer);
 
@@ -132,8 +211,8 @@ void GameServer::handleClientConnected(const ENetEvent& event)
     entt::entity player = createPlayerEntity(registry, position);
     players[event.peer->incomingPeerID] = player;
 
-    game::Message createEntityMessage = createCreateEntityMessage(player, EntityType::PLAYER, position);
-    broadcastMessageToClients(createEntityMessage);
+    // game::Message createEntityMessage = createCreateEntityMessage(player, EntityType::PLAYER, position);
+    // broadcastMessageToClients(createEntityMessage);
 
     std::cout << "handleClientConnected done" << std::endl;
 }
@@ -185,7 +264,7 @@ void GameServer::handlePlayerInput(entt::entity player, const game::PlayerInputM
   }
   if (playerInputMessage.up())
   {
-    if(!gravity_enabled)
+    if(!gravityEnabled)
     {
       velocity.velocity.y += PLAYER_SPEED * 1.f/FPS;
     }
@@ -194,7 +273,7 @@ void GameServer::handlePlayerInput(entt::entity player, const game::PlayerInputM
       velocity.velocity.y += PLAYER_JUMP_SPEED * 1.f/FPS;
     }
   }
-  if (playerInputMessage.down() && !gravity_enabled)
+  if (playerInputMessage.down() && !gravityEnabled)
   {
       velocity.velocity.y -= PLAYER_SPEED * 1.f/FPS;
   }

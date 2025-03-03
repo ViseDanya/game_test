@@ -24,6 +24,22 @@ void LocalGame::resetCamera()
   camera.zoom = 1;
 }
 
+void LocalGame::createGameScene()
+{
+  registry.clear();
+  createPlayer1Entity(registry, glm::vec2(WINDOW_WIDTH/2, WINDOW_HEIGHT/2));
+  createNormalEntity(registry, glm::vec2(WINDOW_WIDTH/2, WINDOW_HEIGHT/2 - PLAYER_HEIGHT/2 - PLATFORM_HEIGHT/2));
+  resetCamera();
+  platformSpawnPoint = WINDOW_HEIGHT/2 - PLAYER_HEIGHT/2 - PLATFORM_HEIGHT/2 - 3*PLATFORM_HEIGHT;
+  for(int i = 0; i < 10; i++)
+  {
+    spawnPlatform();
+  }
+
+  wallSpawnPoint = WALL_HEIGHT/2;
+  spawnWalls();
+}
+
 void LocalGame::showImGui()
 {
     ImGui_ImplSDLRenderer3_NewFrame();
@@ -42,12 +58,7 @@ void LocalGame::showImGui()
     }
     if(ImGui::Button("Reset Game Scene"))
     {
-      createGameScene(registry);
-      resetCamera();
-      platformSpawnPoint -= 2.5*PLATFORM_HEIGHT;
-      wallSpawnPoint -= WALL_HEIGHT/2;
-      spawnPlatform();
-      spawnWalls();
+      createGameScene();
     }
     ImGui::End();
 
@@ -79,12 +90,7 @@ void LocalGame::run()
     float mouseX;
     float mouseY; 
     
-    createGameScene(registry);
-    resetCamera();
-    platformSpawnPoint -= 2.5*PLATFORM_HEIGHT;
-    wallSpawnPoint -= WALL_HEIGHT/2;
-    spawnPlatform();
-    spawnWalls();
+    createGameScene();
 
     while (!quit)
     {

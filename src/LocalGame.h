@@ -17,7 +17,7 @@ class LocalGame
     void showImGui();
     void spawnPlatform();
     void spawnWalls();
-
+    void createGameScene();
     entt::registry registry;
     Camera camera;
     float platformSpawnPoint;
