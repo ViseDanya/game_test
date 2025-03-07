@@ -112,7 +112,9 @@ void GameServer::run()
     Uint64 frameStartTime = SDL_GetTicks();
     while (SDL_PollEvent(&event) != 0)
     {
+      #ifndef HEADLESS
       ImGui_ImplSDL3_ProcessEvent(&event);
+      #endif
       if (event.type == SDL_EVENT_QUIT)
       {
         quit = true;
@@ -168,6 +170,7 @@ void GameServer::run()
 
     broadcastUpdatesToClients();
 
+    #ifndef HEADLESS
     SDL_SetRenderDrawColor(sdlRenderer, 0, 0, 0, 255);
     SDL_RenderClear(sdlRenderer);
 
@@ -185,7 +188,7 @@ void GameServer::run()
     }
 
     SDL_RenderPresent(sdlRenderer);
-
+    #endif
     Uint64 frameEndTime = SDL_GetTicks();
     Uint64 elapsedTime = frameEndTime - frameStartTime;
     if(elapsedTime < 1000/FPS)

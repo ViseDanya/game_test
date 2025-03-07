@@ -2,7 +2,6 @@
 #include <random>
 #include "Entity.h"
 #include "Constants.h"
-#include <glm/vec2.hpp>
 
 entt::entity generatePlatform(entt::registry& registry, glm::vec2 position)
 {

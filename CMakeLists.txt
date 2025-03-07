@@ -56,5 +56,11 @@ PROTOC_OUT_DIR "${CMAKE_CURRENT_BINARY_DIR}/generated"
 IMPORT_DIRS "src/proto"
 )
 
+option(HEADLESS "Headless server" OFF)
+
+if(HEADLESS)
+    add_compile_definitions(HEADLESS)
+endif()
+
 target_include_directories(main PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/generated")
 target_link_libraries(main PRIVATE SDL3::SDL3 SDL3_image::SDL3_image EnTT::EnTT glm::glm ${ENET_LIBRARIES} protobuf::libprotobuf)

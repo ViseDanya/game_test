@@ -70,8 +70,11 @@ void cleanup()
 
 int main(int argc, char *argv[])
 {
+  #ifndef HEADLESS
   initializeSDL();
   initializeImGui();
+  #endif
+
   initializeEnet();
   
   if(argc == 2)
