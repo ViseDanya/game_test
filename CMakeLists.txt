@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.30)
+cmake_minimum_required(VERSION 3.25)
 project(Game)
 set(CMAKE_CXX_STANDARD 14)
 
@@ -9,7 +9,7 @@ find_package(SDL3_image REQUIRED)
 find_package(ENet REQUIRED)
 find_package(EnTT REQUIRED)
 find_package(glm REQUIRED)
-find_package(Protobuf CONFIG REQUIRED)
+find_package(Protobuf REQUIRED)
 
 set(PROTO_FILES
     "src/proto/game.proto"
@@ -62,5 +62,5 @@ if(HEADLESS)
     add_compile_definitions(HEADLESS)
 endif()
 
-target_include_directories(main PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/generated")
+target_include_directories(main PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/generated" "${CMAKE_CURRENT_BINARY_DIR}/generated/src/proto")
 target_link_libraries(main PRIVATE SDL3::SDL3 SDL3_image::SDL3_image EnTT::EnTT glm::glm ${ENET_LIBRARIES} protobuf::libprotobuf)
