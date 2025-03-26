@@ -11,6 +11,14 @@
 class GameServer : public ENetServer
 {
     public:
+    
+    struct ClientInfo
+    {
+        entt::entity player;
+        game::PlayerInputMessage playerInputState;
+        bool ready;
+    };
+
     GameServer() = default;
     ~GameServer() = default;
 
@@ -18,8 +26,10 @@ class GameServer : public ENetServer
 
     private:
     entt::registry registry;
-    std::unordered_map<enet_uint16, entt::entity> players;
-    std::unordered_map<enet_uint16, game::PlayerInputMessage> playerInputState;
+    std::unordered_map<enet_uint16, ClientInfo> gameClients;
+
+    // std::unordered_map<enet_uint16, entt::entity> players;
+    // std::unordered_map<enet_uint16, game::PlayerInputMessage> playerInputState;
 
     void handlePlayerInput(entt::entity player, const game::PlayerInputMessage& playerInputMessage);
     void broadcastUpdatesToClients();
@@ -41,4 +51,7 @@ class GameServer : public ENetServer
     float wallSpawnPoint;
 
     void onEntityCreated(entt::entity entity);
+
+    bool areAllPlayersReady();
+    void startGame();
 };

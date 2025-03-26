@@ -9,7 +9,7 @@ find_package(SDL3_image REQUIRED)
 find_package(ENet REQUIRED)
 find_package(EnTT REQUIRED)
 find_package(glm REQUIRED)
-find_package(Protobuf REQUIRED)
+find_package(Protobuf CONFIG REQUIRED)
 
 set(PROTO_FILES
     "src/proto/game.proto"

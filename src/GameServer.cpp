@@ -155,12 +155,9 @@ void GameServer::run()
 
     processEvents();
 
-    for (const auto& [clientID, playerInputMessage] : playerInputState) 
+    for (const auto& [clientID, client] : gameClients) 
     {
-      if(players.find(clientID) != players.end())
-      {
-        handlePlayerInput(players[clientID], playerInputMessage);
-      }
+        handlePlayerInput(client.player, client.playerInputState);
     }
 
     resetAdjacencies(registry);
@@ -202,9 +199,9 @@ void GameServer::handleClientConnected(const ENetEvent& event)
 {
     std::cout << "handleClientConnected" << std::endl;
 
-    for (const auto& pair : players) 
+    for (const auto& pair : gameClients) 
     {
-      entt::entity player = pair.second;
+      entt::entity player = pair.second.player;
       const Box& box = registry.get<Box>(player);
       game::Message createEntityMessage = createCreateEntityMessage(player, EntityType::PLAYER, box.center);
       sendMessageToClient(event.peer->incomingPeerID, createEntityMessage);
@@ -212,7 +209,7 @@ void GameServer::handleClientConnected(const ENetEvent& event)
 
     glm::vec2 position = glm::vec2(WINDOW_WIDTH/2, WINDOW_HEIGHT/2);
     entt::entity player = createPlayerEntity(registry, position);
-    players[event.peer->incomingPeerID] = player;
+    gameClients[event.peer->incomingPeerID].player = player;
 
     // game::Message createEntityMessage = createCreateEntityMessage(player, EntityType::PLAYER, position);
     // broadcastMessageToClients(createEntityMessage);
@@ -227,7 +224,7 @@ void GameServer::handleClientDisconnected(const ENetEvent& event)
 
 void GameServer::handleMessageReceived(const ENetEvent& event)
 {
-  std::cout << "GameServer::handleMessageReceived" << std::endl;
+  // std::cout << "GameServer::handleMessageReceived" << std::endl;
   game::Message message;
   if(!message.ParseFromArray(event.packet->data, event.packet->dataLength))
   {
@@ -241,8 +238,20 @@ void GameServer::handleMessageReceived(const ENetEvent& event)
     {
       // Process ExampleMessage
       const game::PlayerInputMessage& playerInputMessage = message.player_input_message();
-      std::cout << "Received playerInputMessage: " << event.peer->incomingPeerID << std::endl;
-      playerInputState[event.peer->incomingPeerID] = playerInputMessage;
+      // std::cout << "Received playerInputMessage: " << event.peer->incomingPeerID << std::endl;
+      gameClients[event.peer->incomingPeerID].playerInputState = playerInputMessage;
+      break;
+    }
+    case game::CLIENT_READY_MESSAGE:
+    {
+      const game::ClientReadyMessage& clientReadyMesssage = message.client_ready_message();
+      gameClients[event.peer->incomingPeerID].ready = clientReadyMesssage.ready();
+      std::cout << "Received clientReadyMessage: " << event.peer->incomingPeerID << ", "
+                << clientReadyMesssage.ready() << std::endl;
+      if(areAllPlayersReady())
+      {
+        startGame();
+      }
       break;
     }
     default:
@@ -284,9 +293,9 @@ void GameServer::handlePlayerInput(entt::entity player, const game::PlayerInputM
 
 void GameServer::broadcastUpdatesToClients()
 {
-  for (const auto& pair : players) 
+  for (const auto& pair : gameClients) 
   {
-    entt::entity player = pair.second;
+    entt::entity player = pair.second.player;
     game::Message playerUpdateMessage = createDynamicEntityUpdateMessage(registry, player);
     broadcastMessageToClients(playerUpdateMessage);
   }
@@ -307,4 +316,24 @@ void GameServer::broadcastMessageToClients(const game::Message& message)
   std::string serializedMessage;
   message.SerializeToString(&serializedMessage);
   ENetServer::broadcastMessageToClients(serializedMessage.c_str(), serializedMessage.length());
+}
+
+bool GameServer::areAllPlayersReady()
+{
+  for (const auto & pair : gameClients)
+  {
+    if(!pair.second.ready)
+    {
+      return false;
+    }
+  }
+  return true;
+}
+
+void GameServer::startGame()
+{
+  createGameScene();
+  gameStarted = true;
+  gravityEnabled = true;
+  manualCamera = false;
 }

@@ -51,11 +51,11 @@ void ENetServer::processEvents()
             break;
      
         case ENET_EVENT_TYPE_RECEIVE:
-            std::cout << "Packet received" << std::endl;
-            std::cout << "A packet of length " << enetEvent.packet->dataLength <<
-            // " containing " << enetEvent.packet->data <<
-            " was received from " << enetEvent.peer->data <<
-            " on channel " << enetEvent.channelID << std::endl;
+            // std::cout << "Packet received" << std::endl;
+            // std::cout << "A packet of length " << enetEvent.packet->dataLength <<
+            // // " containing " << enetEvent.packet->data <<
+            // " was received from " << enetEvent.peer->data <<
+            // " on channel " << enetEvent.channelID << std::endl;
      
             handleMessageReceived(enetEvent);
 

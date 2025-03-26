@@ -8,6 +8,7 @@ enum MessageType
   CREATE_ENTITY_MESSAGE = 1;
   DYNAMIC_ENTITY_UPDATE_MESSAGE = 2;
   CAMERA_UPDATE_MESSAGE = 3;
+  CLIENT_READY_MESSAGE = 4;
 }
 
 enum EntityType
@@ -57,6 +58,11 @@ message CameraUpdateMessage
   float zoom = 2;
 }
 
+message ClientReadyMessage
+{
+  bool ready = 1;
+}
+
 message Message
 {
   MessageType message_type = 1;
@@ -66,5 +72,6 @@ message Message
     CreateEntityMessage create_entity_message = 3;
     DynamicEntityUpdateMessage dynamic_entity_update_messsage = 4;
     CameraUpdateMessage camera_update_message = 5;
+    ClientReadyMessage client_ready_message = 6;
   }
 }

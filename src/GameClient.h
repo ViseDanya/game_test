@@ -15,9 +15,12 @@ class GameClient : public ENetClient
     entt::registry registry;
     entt::entity playerEntity;
     std::unordered_map<entt::entity, entt::entity> serverToClientEntityMap;
+    bool ready;
 
     void handleMessageReceived(const ENetEvent& event) override;
     void handleServerDisconnected(const ENetEvent& event) override;
 
+    void sendReady();
     void processAndSendInput(const bool* keystate);
+    void showUI();
 };

@@ -11,9 +11,43 @@
 #include "Components/Velocity.h"
 #include "Components/Adjacencies.h"
 #include "game.pb.h"
+#include <imgui.h>
+#include <imgui_impl_sdl3.h>
+#include <imgui_impl_sdlrenderer3.h>
 
 extern SDL_Renderer* sdlRenderer;
 static Camera camera;
+
+void GameClient::sendReady()
+{
+  game::ClientReadyMessage clientReadyMessage;
+  clientReadyMessage.set_ready(ready);
+  game::Message message;
+  message.set_message_type(game::MessageType::CLIENT_READY_MESSAGE);
+  message.mutable_client_ready_message()->CopyFrom(clientReadyMessage);
+  std::string serializedMessage;
+  message.SerializeToString(&serializedMessage);
+  sendMessageToServer(serializedMessage.c_str(), serializedMessage.length());
+}
+
+void GameClient::showUI()
+{
+    ImGui_ImplSDLRenderer3_NewFrame();
+    ImGui_ImplSDL3_NewFrame();
+    ImGui::NewFrame();
+    ImGui::SetNextWindowSize({0, 0});
+    ImGui::SetNextWindowPos({10, 10});
+    ImGui::Begin("Options");
+    if (ImGui::Button("Ready"))
+    {
+      ready = !ready;
+      sendReady();
+    }
+    ImGui::End();
+
+    ImGui::Render();
+    ImGui_ImplSDLRenderer3_RenderDrawData(ImGui::GetDrawData(), sdlRenderer);
+}
 
 void GameClient::processAndSendInput(const bool* keystate)
 {
@@ -45,6 +79,7 @@ void GameClient::processAndSendInput(const bool* keystate)
 
 void GameClient::run()
 {
+    // connectToServer("104.154.187.49");
     connectToServer("localhost");
 
     TextureManager::loadAllTextures(sdlRenderer);
@@ -68,7 +103,7 @@ void GameClient::run()
     Uint64 frameStartTime = SDL_GetTicks();
     while (SDL_PollEvent(&event) != 0)
     {
-    //   ImGui_ImplSDL3_ProcessEvent(&event);
+      ImGui_ImplSDL3_ProcessEvent(&event);
       if (event.type == SDL_EVENT_QUIT)
       {
         quit = true;
@@ -110,7 +145,7 @@ void GameClient::run()
     renderColoredEntities(registry, renderer, camera);
     renderSprites(registry, renderer, camera);
 
-    // showImGui(registry);
+    showUI();
 
     // if(debugColliders)
     // {
@@ -135,7 +170,7 @@ void GameClient::handleServerDisconnected(const ENetEvent& event)
 
 void GameClient::handleMessageReceived(const ENetEvent& event)
 {
-  std::cout << "GameClient::handleMessageReceived" << std::endl;
+  // std::cout << "GameClient::handleMessageReceived" << std::endl;
   game::Message message;
   if(!message.ParseFromArray(event.packet->data, event.packet->dataLength))
   {
