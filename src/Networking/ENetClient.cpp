@@ -63,10 +63,10 @@ void ENetClient::processEvents()
         switch (enetEvent.type)
         {
         case ENET_EVENT_TYPE_RECEIVE:
-            std::cout << "A packet of length " << enetEvent.packet->dataLength <<
-            // " containing " << enetEvent.packet->data <<
-            " was received from " << enetEvent.peer->data <<
-            " on channel " << enetEvent.channelID << std::endl;
+            // std::cout << "A packet of length " << enetEvent.packet->dataLength <<
+            // // " containing " << enetEvent.packet->data <<
+            // " was received from " << enetEvent.peer->data <<
+            // " on channel " << enetEvent.channelID << std::endl;
     
             handleMessageReceived(enetEvent);
 

@@ -35,14 +35,15 @@ void GameClient::showUI()
     ImGui_ImplSDLRenderer3_NewFrame();
     ImGui_ImplSDL3_NewFrame();
     ImGui::NewFrame();
-    ImGui::SetNextWindowSize({0, 0});
     ImGui::SetNextWindowPos({10, 10});
-    ImGui::Begin("Options");
+    ImGui::Begin("Options", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
     if (ImGui::Button("Ready"))
     {
       ready = !ready;
       sendReady();
     }
+    ImGui::SameLine();
+    ImGui::Text(ready ? "Ready" : "Not Ready");
     ImGui::End();
 
     ImGui::Render();
@@ -79,7 +80,7 @@ void GameClient::processAndSendInput(const bool* keystate)
 
 void GameClient::run()
 {
-    // connectToServer("104.154.187.49");
+    // connectToServer("23.236.62.199");
     connectToServer("localhost");
 
     TextureManager::loadAllTextures(sdlRenderer);
@@ -93,11 +94,6 @@ void GameClient::run()
   camera.position = glm::vec2(WINDOW_WIDTH/2, WINDOW_HEIGHT/2);
   camera.zoom = 1;
 
-  bool manualCamera = true;
-//   entt::registry registry;
-//   createGameScene(registry);
-//   resetCamera();  
-
   while (!quit)
   {
     Uint64 frameStartTime = SDL_GetTicks();
@@ -108,28 +104,7 @@ void GameClient::run()
       {
         quit = true;
       }
-      else if (event.type == SDL_EVENT_MOUSE_WHEEL && manualCamera)
-      {
-        camera.zoom *= (event.wheel.y > 0) ? 1.1f : 0.9f; // Zoom in if scrolling up, zoom out if scrolling down
-      }
     }
-
-    // if(manualCamera)
-    // {
-    //   float prevMouseX = mouseX;
-    //   float prevMouseY = mouseY;
-    //   if (SDL_GetMouseState(&mouseX, &mouseY) & SDL_BUTTON_LMASK)
-    //   {
-    //     float deltaX = mouseX - prevMouseX;
-    //     float deltaY = mouseY - prevMouseY;
-    //     camera.position.x -= (deltaX / camera.zoom);
-    //     camera.position.y += (deltaY / camera.zoom);
-    //   }
-    // }
-    // else
-    // {
-    //   camera.position.y -= (WINDOW_WIDTH/(3*FPS));
-    // }
 
     const bool *keystate = SDL_GetKeyboardState(nullptr);
     processAndSendInput(keystate);
@@ -195,7 +170,7 @@ void GameClient::handleMessageReceived(const ENetEvent& event)
     case game::DYNAMIC_ENTITY_UPDATE_MESSAGE:
     {
       const game::DynamicEntityUpdateMessage& dynamicEntityUpdateMessage = message.dynamic_entity_update_messsage();
-      std::cout << "Received dynamicEntityUpdateMessage: " << dynamicEntityUpdateMessage.entity() << std::endl;
+      // std::cout << "Received dynamicEntityUpdateMessage: " << dynamicEntityUpdateMessage.entity() << std::endl;
       const entt::entity serverEntity = entt::entity{dynamicEntityUpdateMessage.entity()};
       if(serverToClientEntityMap.find(serverEntity) != serverToClientEntityMap.end())
       {
@@ -218,10 +193,11 @@ void GameClient::handleMessageReceived(const ENetEvent& event)
     case game::CAMERA_UPDATE_MESSAGE:
     {
       const game::CameraUpdateMessage& cameraUpdateMessage = message.camera_update_message();
-      std::cout << "Received cameraUpdateMessage: " << std::endl;
+      // std::cout << "Received cameraUpdateMessage: " << std::endl;
       camera.position.x = cameraUpdateMessage.position().x();
       camera.position.y = cameraUpdateMessage.position().y(); 
       camera.zoom = cameraUpdateMessage.zoom();
+      break;
     }
     default:
     {
