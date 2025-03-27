@@ -10,6 +10,7 @@
 #include "Components/Box.h"
 #include "Components/Velocity.h"
 #include "Components/Adjacencies.h"
+#include "Components/Animation.h"
 #include "game.pb.h"
 #include <imgui.h>
 #include <imgui_impl_sdl3.h>
@@ -197,6 +198,16 @@ void GameClient::handleMessageReceived(const ENetEvent& event)
       camera.position.x = cameraUpdateMessage.position().x();
       camera.position.y = cameraUpdateMessage.position().y(); 
       camera.zoom = cameraUpdateMessage.zoom();
+      break;
+    }
+    case game::PLAY_ANIMATION_MESSAGE:
+    {
+      const game::PlayAnimationMessage& playAnimationMessage = message.play_animation_message();
+      const entt::entity serverEntity = entt::entity{playAnimationMessage.entity()};
+      entt::entity clientEntity = serverToClientEntityMap[serverEntity];
+      Animation& animation = registry.get<Animation>(clientEntity);
+      animation.currentFrame = 0;
+      animation.isPlaying = true;
       break;
     }
     default:

@@ -139,7 +139,7 @@ void resolveDynamicWithTrampolineCollision(entt::registry& registry, CollisionIn
     auto& trampoline = registry.get<Trampoline>(collisionInfo.e2);
     if(collisionInfo.direction == Direction::DOWN)
     {
-        trampoline.isTriggered = true;
+        trampoline.state = Trampoline::State::TRIGGERED;
         adjacencies.isOnFloor = false;
         velocity.velocity.y = trampoline.impulse * 1./FPS;
     }

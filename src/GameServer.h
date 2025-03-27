@@ -32,7 +32,11 @@ class GameServer : public ENetServer
     // std::unordered_map<enet_uint16, game::PlayerInputMessage> playerInputState;
 
     void handlePlayerInput(entt::entity player, const game::PlayerInputMessage& playerInputMessage);
-    void broadcastUpdatesToClients();
+    void broadcastGameUpdates();
+    void broadcastDynamicEntityUpdates();
+    void broadcastCameraUpdates();
+    void broadcastTrampolineUpdates();
+    void broadcastFakeUpdates();
 
     void handleClientConnected(const ENetEvent& event) override;
     void handleMessageReceived(const ENetEvent& event) override;

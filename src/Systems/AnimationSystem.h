@@ -4,3 +4,4 @@
 void updateAnimations(entt::registry& registry);
 void updateAnimators(entt::registry& registry);
 void updateTrampolineAnimations(entt::registry& registry);
+void updateFakeAnimations(entt::registry& registry);

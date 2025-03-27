@@ -5,6 +5,8 @@
 #include "Systems/CollisionSystem.h"
 #include "Systems/InputSystem.h"
 #include "Systems/PhysicsSystem.h"
+#include "Components/Trampoline.h"
+#include "Components/Fake.h"
 #include "Constants.h"
 #include "TextureManager.h"
 #include "Velocity.h"
@@ -162,10 +164,11 @@ void GameServer::run()
 
     resetAdjacencies(registry);
     applyVelocityToPosition(registry);
-    resolveCollisions(registry);
+    updateTrampolines(registry);
     updateFakePlatforms(registry);
+    resolveCollisions(registry);
 
-    broadcastUpdatesToClients();
+    broadcastGameUpdates();
 
     #ifndef HEADLESS
     SDL_SetRenderDrawColor(sdlRenderer, 0, 0, 0, 255);
@@ -173,6 +176,7 @@ void GameServer::run()
 
     updateAnimators(registry);
     updateTrampolineAnimations(registry);
+    updateFakeAnimations(registry);
     updateAnimations(registry);
     renderColoredEntities(registry, renderer, camera);
     renderSprites(registry, renderer, camera);
@@ -291,7 +295,15 @@ void GameServer::handlePlayerInput(entt::entity player, const game::PlayerInputM
   }
 }
 
-void GameServer::broadcastUpdatesToClients()
+void GameServer::broadcastGameUpdates()
+{
+  broadcastDynamicEntityUpdates();
+  broadcastCameraUpdates();
+  broadcastTrampolineUpdates();
+  broadcastFakeUpdates();
+}
+
+void GameServer::broadcastDynamicEntityUpdates()
 {
   for (const auto& pair : gameClients) 
   {
@@ -299,9 +311,38 @@ void GameServer::broadcastUpdatesToClients()
     game::Message playerUpdateMessage = createDynamicEntityUpdateMessage(registry, player);
     broadcastMessageToClients(playerUpdateMessage);
   }
+}
 
+void GameServer::broadcastCameraUpdates()
+{
   game::Message cameraUpdateMessage = createCameraUpdateMessage(camera);
   broadcastMessageToClients(cameraUpdateMessage);
+}
+
+void GameServer::broadcastTrampolineUpdates()
+{
+  auto view = registry.view<Trampoline>();
+  view.each([&](entt::entity e, Trampoline& trampoline) 
+  {
+    if(trampoline.state == Trampoline::State::TRIGGERED)
+    {
+      game::Message playAnimationMessaage = createPlayAnimationMessage(e);
+      broadcastMessageToClients(playAnimationMessaage);
+    }
+  });
+}
+
+void GameServer::broadcastFakeUpdates()
+{
+  auto view = registry.view<Fake>();
+  view.each([&](entt::entity e, Fake& fake) 
+  {
+    if(fake.state == Fake::State::FLIP)
+    {
+      game::Message playAnimationMessaage = createPlayAnimationMessage(e);
+      broadcastMessageToClients(playAnimationMessaage);
+    }
+  });
 }
 
 void GameServer::sendMessageToClient(enet_uint16 clientID, const game::Message& message)

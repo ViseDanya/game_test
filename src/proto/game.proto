@@ -9,6 +9,7 @@ enum MessageType
   DYNAMIC_ENTITY_UPDATE_MESSAGE = 2;
   CAMERA_UPDATE_MESSAGE = 3;
   CLIENT_READY_MESSAGE = 4;
+  PLAY_ANIMATION_MESSAGE = 5;
 }
 
 enum EntityType
@@ -63,6 +64,11 @@ message ClientReadyMessage
   bool ready = 1;
 }
 
+message PlayAnimationMessage
+{
+  uint32 entity = 1;
+}
+
 message Message
 {
   MessageType message_type = 1;
@@ -73,5 +79,6 @@ message Message
     DynamicEntityUpdateMessage dynamic_entity_update_messsage = 4;
     CameraUpdateMessage camera_update_message = 5;
     ClientReadyMessage client_ready_message = 6;
+    PlayAnimationMessage play_animation_message = 7;
   }
 }

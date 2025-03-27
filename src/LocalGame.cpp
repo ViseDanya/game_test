@@ -140,14 +140,16 @@ void LocalGame::run()
       applyInputToVelocity(registry, keystate, gravityEnabled);
       resetAdjacencies(registry);
       applyVelocityToPosition(registry);
-      resolveCollisions(registry);
+      updateTrampolines(registry);
       updateFakePlatforms(registry);
+      resolveCollisions(registry);
   
       SDL_SetRenderDrawColor(sdlRenderer, 0, 0, 0, 255);
       SDL_RenderClear(sdlRenderer);
   
       updateAnimators(registry);
       updateTrampolineAnimations(registry);
+      updateFakeAnimations(registry);
       updateAnimations(registry);
       renderColoredEntities(registry, renderer, camera);
       renderSprites(registry, renderer, camera);

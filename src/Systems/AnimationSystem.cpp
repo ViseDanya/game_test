@@ -4,6 +4,7 @@
 #include "Components/Animator.h"
 #include "Components/Sprite.h"
 #include "Components/Trampoline.h"
+#include "Components/Fake.h"
 #include <Velocity.h>
 
 void updateAnimations(entt::registry& registry)
@@ -83,9 +84,21 @@ void updateTrampolineAnimations(entt::registry& registry)
   auto view = registry.view<Trampoline, Animation>();
   view.each([&](Trampoline& trampoline, Animation& animation) 
   {
-    if(trampoline.isTriggered)
+    if(trampoline.state == Trampoline::State::TRIGGERED)
     {
-      trampoline.isTriggered = false;
+      animation.currentFrame = 0;
+      animation.isPlaying = true;
+    }
+  });
+}
+
+void updateFakeAnimations(entt::registry& registry)
+{
+  auto view = registry.view<Fake, Animation>();
+  view.each([&](Fake& fake, Animation& animation) 
+  {
+    if(fake.state == Fake::State::FLIP)
+    {
       animation.currentFrame = 0;
       animation.isPlaying = true;
     }

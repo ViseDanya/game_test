@@ -5,6 +5,11 @@
 
 struct Trampoline
 {
+    enum State
+    {
+        IDLE, TRIGGERED
+    };
+
+    State state = IDLE;
     float impulse = PLAYER_JUMP_SPEED;
-    bool isTriggered = false;
 };

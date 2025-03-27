@@ -3,6 +3,7 @@
 #include "Components/Velocity.h"
 #include "Components/Adjacencies.h"
 #include "Components/Fake.h"
+#include "Components/Trampoline.h"
 #include "Components/Collider.h"
 #include "Components/Animation.h"
 #include <entt/entt.hpp>
@@ -55,19 +56,33 @@ void resetAdjacencies(entt::registry& registry)
   });
 }
 
+void updateTrampolines(entt::registry& registry)
+{
+  auto trampolines = registry.view<Trampoline>();
+  trampolines.each([&](Trampoline& trampoline) 
+  {
+    if(trampoline.state == Trampoline::State::TRIGGERED)
+    {
+      trampoline.state = Trampoline::State::IDLE;
+    }
+  });
+}
+
 void updateFakePlatforms(entt::registry& registry)
 {
-  auto fakePlatforms = registry.view<Fake, Collider, Animation>();
-  fakePlatforms.each([&](Fake& fake, Collider& collider, Animation& animation) 
+  auto fakePlatforms = registry.view<Fake, Collider>();
+  fakePlatforms.each([&](Fake& fake, Collider& collider) 
   {
     const Uint64 currentTime = SDL_GetTicks();
     const Uint64 timeElapsedSinceTriggered = currentTime - fake.collisionTime;
     if(fake.state == Fake::State::TRIGGERED && timeElapsedSinceTriggered >= fake.timeUntilFlipMS)
     {
-      fake.state = Fake::State::FLIPPING;
+      fake.state = Fake::State::FLIP;
       collider.isEnabled = false;
-      animation.currentFrame = 0;
-      animation.isPlaying = true;
+    }
+    else if(fake.state == Fake::State::FLIP)
+    {
+      fake.state = Fake::State::FLIPPING;
     }
     else if(timeElapsedSinceTriggered >= fake.timeUntilFlipMS + fake.flipDuration)
     {

@@ -6,7 +6,7 @@ struct Fake
 {
     enum State
     {
-        IDLE, TRIGGERED, FLIPPING
+        IDLE, TRIGGERED, FLIP, FLIPPING
     };
     
     Uint64 collisionTime;

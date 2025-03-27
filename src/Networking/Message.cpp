@@ -53,3 +53,13 @@ game::Message createCameraUpdateMessage(const Camera& camera)
     message.mutable_camera_update_message()->CopyFrom(cameraUpdateMessage);
     return message;
 }
+
+game::Message createPlayAnimationMessage(const entt::entity entity)
+{
+    game::PlayAnimationMessage playAnimationMessage;
+    playAnimationMessage.set_entity(entt::to_integral(entity));
+    game::Message message;
+    message.set_message_type(game::MessageType::PLAY_ANIMATION_MESSAGE);
+    message.mutable_play_animation_message()->CopyFrom(playAnimationMessage);
+    return message;
+}
