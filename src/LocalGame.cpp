@@ -5,6 +5,7 @@
 #include "Systems/CollisionSystem.h"
 #include "Systems/InputSystem.h"
 #include "Systems/PhysicsSystem.h"
+#include "Systems/StateSystem.h"
 #include "Constants.h"
 #include "TextureManager.h"
 #include "Components/Health.h"
@@ -132,7 +133,7 @@ void LocalGame::run()
       }
       else
       {
-        camera.position.y -= (WINDOW_WIDTH/(3*FPS));
+        camera.position.y -= (WINDOW_HEIGHT/(5*FPS));
       }
   
       const bool *keystate = SDL_GetKeyboardState(nullptr);

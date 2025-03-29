@@ -39,6 +39,7 @@ set(MAIN_SOURCES
     "src/Systems/CollisionSystem.cpp"
     "src/Systems/InputSystem.cpp"
     "src/Systems/PhysicsSystem.cpp"
+    "src/Systems/StateSystem.cpp"
     "src/Systems/RenderSystem.cpp"
     "src/Entity.cpp"
     "src/Direction.cpp"

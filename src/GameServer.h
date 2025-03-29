@@ -37,6 +37,7 @@ class GameServer : public ENetServer
     void broadcastCameraUpdates();
     void broadcastTrampolineUpdates();
     void broadcastFakeUpdates();
+    void broadcastHealthUpdates();
 
     void handleClientConnected(const ENetEvent& event) override;
     void handleMessageReceived(const ENetEvent& event) override;

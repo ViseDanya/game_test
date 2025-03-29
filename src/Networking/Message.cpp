@@ -1,7 +1,9 @@
 #include "Message.h"
+#include "Camera.h"
 #include "Components/Box.h"
 #include "Components/Velocity.h"
 #include "Components/Adjacencies.h"
+#include "Components/Health.h"
 
 game::Message createCreateEntityMessage(const entt::entity entity, const EntityType entityType, const glm::vec2& position)
 {
@@ -61,5 +63,17 @@ game::Message createPlayAnimationMessage(const entt::entity entity)
     game::Message message;
     message.set_message_type(game::MessageType::PLAY_ANIMATION_MESSAGE);
     message.mutable_play_animation_message()->CopyFrom(playAnimationMessage);
+    return message;
+}
+
+game::Message createHealthUpdateMessage(const entt::entity entity, const Health& health)
+{
+    game::HealthUpdateMessage healthUpdateMessage;
+    healthUpdateMessage.set_entity(entt::to_integral(entity));
+    healthUpdateMessage.set_health(health.health);
+    healthUpdateMessage.set_is_damaged(health.state == Health::State::DAMAGED);
+    game::Message message;
+    message.set_message_type(game::MessageType::HEALTH_UPDATE_MESSAGE);
+    message.mutable_health_update_message()->CopyFrom(healthUpdateMessage);
     return message;
 }

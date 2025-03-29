@@ -10,6 +10,7 @@ enum MessageType
   CAMERA_UPDATE_MESSAGE = 3;
   CLIENT_READY_MESSAGE = 4;
   PLAY_ANIMATION_MESSAGE = 5;
+  HEALTH_UPDATE_MESSAGE = 6;
 }
 
 enum EntityType
@@ -69,6 +70,13 @@ message PlayAnimationMessage
   uint32 entity = 1;
 }
 
+message HealthUpdateMessage
+{
+  uint32 entity = 1;
+  int32 health = 2;
+  bool is_damaged = 3;
+}
+
 message Message
 {
   MessageType message_type = 1;
@@ -80,5 +88,6 @@ message Message
     CameraUpdateMessage camera_update_message = 5;
     ClientReadyMessage client_ready_message = 6;
     PlayAnimationMessage play_animation_message = 7;
+    HealthUpdateMessage health_update_message = 8;
   }
 }

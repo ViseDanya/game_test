@@ -5,12 +5,14 @@
 #include "Systems/CollisionSystem.h"
 #include "Systems/InputSystem.h"
 #include "Systems/PhysicsSystem.h"
+#include "Systems/StateSystem.h"
 #include "Components/Trampoline.h"
 #include "Components/Fake.h"
 #include "Constants.h"
 #include "TextureManager.h"
-#include "Velocity.h"
-#include "Adjacencies.h"
+#include "Components/Velocity.h"
+#include "Components/Adjacencies.h"
+#include "Components/Health.h"
 #include "Networking/Message.h"
 #include "Scene.h"
 #include <imgui.h>
@@ -141,7 +143,7 @@ void GameServer::run()
     }
     else
     {
-      camera.position.y -= (WINDOW_WIDTH/(3*FPS));
+      camera.position.y -= (WINDOW_WIDTH/(5*FPS));
     }
 
     if(gameStarted && camera.position.y - platformSpawnPoint < 2*WINDOW_HEIGHT)
@@ -166,6 +168,7 @@ void GameServer::run()
     applyVelocityToPosition(registry);
     updateTrampolines(registry);
     updateFakePlatforms(registry);
+    updateHealth(registry);
     resolveCollisions(registry);
 
     broadcastGameUpdates();
@@ -301,6 +304,7 @@ void GameServer::broadcastGameUpdates()
   broadcastCameraUpdates();
   broadcastTrampolineUpdates();
   broadcastFakeUpdates();
+  broadcastHealthUpdates();
 }
 
 void GameServer::broadcastDynamicEntityUpdates()
@@ -342,6 +346,16 @@ void GameServer::broadcastFakeUpdates()
       game::Message playAnimationMessaage = createPlayAnimationMessage(e);
       broadcastMessageToClients(playAnimationMessaage);
     }
+  });
+}
+
+void GameServer::broadcastHealthUpdates()
+{
+  auto view = registry.view<Health>();
+  view.each([&](entt::entity e, Health& health) 
+  {
+    game::Message healthUpdateMessage = createHealthUpdateMessage(e, health);
+    broadcastMessageToClients(healthUpdateMessage);
   });
 }
 

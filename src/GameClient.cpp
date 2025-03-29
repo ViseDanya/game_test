@@ -11,6 +11,7 @@
 #include "Components/Velocity.h"
 #include "Components/Adjacencies.h"
 #include "Components/Animation.h"
+#include "Components/Health.h"
 #include "game.pb.h"
 #include <imgui.h>
 #include <imgui_impl_sdl3.h>
@@ -208,6 +209,16 @@ void GameClient::handleMessageReceived(const ENetEvent& event)
       Animation& animation = registry.get<Animation>(clientEntity);
       animation.currentFrame = 0;
       animation.isPlaying = true;
+      break;
+    }
+    case game::HEALTH_UPDATE_MESSAGE:
+    {
+      const game::HealthUpdateMessage& healthUpdateMessage = message.health_update_message();
+      const entt::entity serverEntity = entt::entity{healthUpdateMessage.entity()};
+      entt::entity clientEntity = serverToClientEntityMap[serverEntity];
+      Health& health = registry.get<Health>(clientEntity);
+      health.health = healthUpdateMessage.health();
+      health.state = healthUpdateMessage.is_damaged() ? Health::State::DAMAGED : Health::State::IDLE;
       break;
     }
     default:
