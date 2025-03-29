@@ -8,12 +8,54 @@
 #include "Components/Conveyor.h"
 #include "Components/Collider.h"
 #include "Components/Fake.h"
+#include "Components/Health.h"
+#include "Components/HealthChanger.h"
 #include "Constants.h"
 #include <numeric>
 #include <iostream>
 
 static constexpr int MAX_COLLISION_ITERATIONS = 100;
 static const float COLLISION_TOLERANCE = .001f;
+
+struct pair_hash {
+    template <typename T, typename U>
+    std::size_t operator ()(const std::pair<T, U>& p) const {
+        auto hash1 = std::hash<T>{}(p.first); // Hash for the first element
+        auto hash2 = std::hash<U>{}(p.second); // Hash for the second element
+        
+        // Combine the two hash values (using a common trick)
+        return hash1 ^ (hash2 << 1);  // XOR and shift
+    }
+};
+
+struct CollisionManager
+{
+    std::unordered_set<std::pair<entt::entity,entt::entity>, pair_hash> previousFrameCollisions;
+    std::unordered_set<std::pair<entt::entity,entt::entity>, pair_hash> currentFrameCollisions;
+    void registerCollision(entt::entity e1, entt::entity e2)
+    {
+        currentFrameCollisions.insert(getCollisionPair(e1,e2));
+    }
+
+    bool wereEntitesCollidingInPreviousFrame(entt::entity e1, entt::entity e2)
+    {
+        return previousFrameCollisions.count(getCollisionPair(e1,e2)) > 0;
+    }
+
+    std::pair<entt::entity, entt::entity> getCollisionPair(entt::entity e1, entt::entity e2)
+    {
+        if(e1 < e2)
+        {
+            return std::pair(e1, e2);
+        }
+        else
+        {
+            return std::pair(e2, e1);
+        }
+    }
+};
+
+static CollisionManager collisionManager;
 
 struct CollisionInfo
 {
@@ -165,6 +207,16 @@ void resolveDynamicWithFakeCollision(entt::registry& registry, CollisionInfo col
     }
 }
 
+void resolveHealthhWithHealthChangerCollision(entt::registry& registry, CollisionInfo collisionInfo)
+{
+    auto& health = registry.get<Health>(collisionInfo.e1);
+    auto& healthChanger = registry.get<HealthChanger>(collisionInfo.e2);
+    if(!collisionManager.wereEntitesCollidingInPreviousFrame(collisionInfo.e1, collisionInfo.e2))
+    {
+        health.applyChangeToHealth(healthChanger.amount);
+    }
+}
+
 void resolveDynamicWithStaticCollision(entt::registry& registry, CollisionInfo collisionInfo)
 {
     auto [box, velocity, adjacencies] = registry.get<Box, Velocity, Adjacencies>(collisionInfo.e1);
@@ -213,10 +265,16 @@ void resolveCollision(entt::registry& registry, CollisionInfo collisionInfo)
             resolveDynamicWithFakeCollision(registry, collisionInfo);
         }
     }
+    if(registry.all_of<Health>(collisionInfo.e1) && registry.all_of<HealthChanger>(collisionInfo.e2))
+    {
+        resolveHealthhWithHealthChangerCollision(registry, collisionInfo);
+    }
 }
 
 void resolveCollisions(entt::registry& registry)
 {
+    collisionManager.previousFrameCollisions = std::move(collisionManager.currentFrameCollisions);
+    collisionManager.currentFrameCollisions.clear();
     bool collisionDetected = true;
     int numCollisionIterations = 0;
     auto movingCollidableEntites = registry.view<Box, Velocity, Collider>();
@@ -249,6 +307,7 @@ void resolveCollisions(entt::registry& registry)
                     else
                     {
                         collisionDetected =  true;
+                        collisionManager.registerCollision(e1, e2);
                         resolveCollision(registry, collisionInfo);
                     }
                 }

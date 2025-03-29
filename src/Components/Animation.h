@@ -95,6 +95,66 @@ struct Animation
         return animation;
     }
 
+    static Animation createPlayerIdleDamagedAnimation()
+    {
+        Animation animation;
+        animation.currentFrame = 0;
+        animation.frameStartTimeMS = SDL_GetTicks();
+        animation.frameRate = 8;
+        animation.setFrames(2, glm::vec2{32*8,0}, glm::vec2{0,32}, glm::vec2{32,32});
+        return animation;
+    }
+
+    static Animation createPlayerRunRightDamagedAnimation()
+    {
+        Animation animation;
+        animation.currentFrame = 0;
+        animation.frameStartTimeMS = SDL_GetTicks();
+        animation.frameRate = 8;
+        animation.setFrames(4, glm::vec2{32*4,32}, glm::vec2{32,0}, glm::vec2{32,32});
+        return animation;
+    }
+
+    static Animation createPlayerRunLeftDamagedAnimation()
+    {
+        Animation animation;
+        animation.currentFrame = 0;
+        animation.frameStartTimeMS = SDL_GetTicks();
+        animation.frameRate = 8;
+        animation.setFrames(4, glm::vec2{32*4,0}, glm::vec2{32,0}, glm::vec2{32,32});
+        return animation;
+    }
+
+    static Animation createPlayerFallIdleDamagedAnimation()
+    {
+        Animation animation;
+        animation.currentFrame = 0;
+        animation.frameStartTimeMS = SDL_GetTicks();
+        animation.frameRate = 8;
+        animation.setFrames(4, glm::vec2{32*4,32*4}, glm::vec2{32,0}, glm::vec2{32,32});
+        return animation;
+    }
+
+    static Animation createPlayerFallRightDamagedAnimation()
+    {
+        Animation animation;
+        animation.currentFrame = 0;
+        animation.frameStartTimeMS = SDL_GetTicks();
+        animation.frameRate = 8;
+        animation.setFrames(4, glm::vec2{32*4,32*3}, glm::vec2{32,0}, glm::vec2{32,32});
+        return animation;
+    }
+
+    static Animation createPlayerFallLeftDamagedAnimation()
+    {
+        Animation animation;
+        animation.currentFrame = 0;
+        animation.frameStartTimeMS = SDL_GetTicks();
+        animation.frameRate = 8;
+        animation.setFrames(4, glm::vec2{32*4,32*2}, glm::vec2{32,0}, glm::vec2{32,32});
+        return animation;
+    }
+
     static Animation createTrampolineAnimation()
     {
         Animation animation;

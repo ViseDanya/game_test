@@ -6,6 +6,7 @@
 #include "Components/Trampoline.h"
 #include "Components/Collider.h"
 #include "Components/Animation.h"
+#include "Components/Health.h"
 #include <entt/entt.hpp>
 
 void resetVelocity(entt::registry& registry, const bool gravityEnabled)
@@ -88,6 +89,23 @@ void updateFakePlatforms(entt::registry& registry)
     {
       fake.state = Fake::State::IDLE;
       collider.isEnabled = true;
+    }
+  });
+}
+
+void updateHealth(entt::registry& registry)
+{
+  auto healths = registry.view<Health>();
+  healths.each([&](Health& health) 
+  {
+    if(health.state == Health::State::DAMAGED)
+    {
+      const Uint64 currentTime = SDL_GetTicks();
+      const Uint64 timeElapsedSinceDamaged = currentTime - health.damageTime;
+      if(timeElapsedSinceDamaged >= health.damageDuration)
+      {
+        health.state = Health::State::IDLE;
+      }
     }
   });
 }

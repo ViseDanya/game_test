@@ -11,6 +11,8 @@
 #include "Components/Conveyor.h"
 #include "Components/Collider.h"
 #include "Components/Fake.h"
+#include "Components/Health.h"
+#include "Components/HealthChanger.h"
 #include "TextureManager.h"
 #include <entt/entt.hpp>
 
@@ -50,6 +52,7 @@ entt::entity createPlayerEntity(entt::registry& registry, const glm::vec2& posit
     registry.emplace<Adjacencies>(playerEntity);
     registry.emplace<Animation>(playerEntity, Animation::createPlayerIdleAnimation());
     registry.emplace<Animator>(playerEntity, Animator::createPlayerAnimtor());
+    registry.emplace<Health>(playerEntity, 10);
     registry.emplace<TypeComponent>(playerEntity, EntityType::PLAYER);
     return playerEntity;
 }
@@ -95,6 +98,7 @@ entt::entity createNormalEntity(entt::registry& registry, const glm::vec2& posit
     registry.emplace<Collider>(normalEntity, Box(glm::ZERO, box.size), true, true);
     registry.emplace<Sprite>(normalEntity, TextureManager::normalTexture, SDL_FRect{0,0,PLATFORM_WIDTH,PLATFORM_HEIGHT});
     registry.emplace<TypeComponent>(normalEntity, EntityType::NORMAL_PLATFORM);
+    registry.emplace<HealthChanger>(normalEntity, 1);
     return normalEntity;
 }
 
@@ -106,6 +110,7 @@ entt::entity createConveyorEntity(entt::registry& registry, const glm::vec2& pos
     registry.emplace<Collider>(conveyorEntity, Box(glm::ZERO, box.size), true, true);
     registry.emplace<Conveyor>(conveyorEntity);
     registry.emplace<Animation>(conveyorEntity, Animation::createConveyorAnimation());
+    registry.emplace<HealthChanger>(conveyorEntity, 1);
     return conveyorEntity;
 }
 
@@ -139,6 +144,7 @@ entt::entity createTrampolineEntity(entt::registry& registry, const glm::vec2& p
     registry.emplace<Trampoline>(trampoline);
     registry.emplace<Animation>(trampoline, Animation::createTrampolineAnimation());
     registry.emplace<TypeComponent>(trampoline, EntityType::TRAMPOLINE);
+    registry.emplace<HealthChanger>(trampoline, 1);
     return trampoline;
 }
 
@@ -160,6 +166,7 @@ entt::entity createSpikesEntity(entt::registry& registry, const glm::vec2& posit
     registry.emplace<Collider>(spikes, Box(glm::vec2(0,-SPIKES_HEIGHT/4), glm::vec2(PLATFORM_WIDTH/2,7)), true, true);
     registry.emplace<Sprite>(spikes, TextureManager::spikesTexture, SDL_FRect{0,0,PLATFORM_WIDTH,SPIKES_HEIGHT});
     registry.emplace<TypeComponent>(spikes, EntityType::SPIKES);
+    registry.emplace<HealthChanger>(spikes, -1);
     return spikes;
 }
 
@@ -173,5 +180,6 @@ entt::entity createFakeEntity(entt::registry& registry, const glm::vec2& positio
     registry.emplace<Animation>(fakeEntity, Animation::createFakeAnimation());
     registry.emplace<Fake>(fakeEntity);
     registry.emplace<TypeComponent>(fakeEntity, EntityType::FAKE_PLATFORM);
+    registry.emplace<HealthChanger>(fakeEntity, 1);
     return fakeEntity;
 }

@@ -5,6 +5,7 @@
 #include "Components/Sprite.h"
 #include "Components/Trampoline.h"
 #include "Components/Fake.h"
+#include "Components/Health.h"
 #include <Velocity.h>
 
 void updateAnimations(entt::registry& registry)
@@ -33,26 +34,51 @@ void updateAnimations(entt::registry& registry)
 
 void updateAnimators(entt::registry& registry)
 {
-  auto view = registry.view<Velocity, const Adjacencies, Animation, Animator>();
-  view.each([&](Velocity& velocity, const Adjacencies& adjacencies, Animation& animation, Animator& animator) 
+  auto view = registry.view<const Velocity, const Adjacencies, const Health, Animation, Animator>();
+  view.each([&](const Velocity& velocity, const Adjacencies& adjacencies, const Health& health, Animation& animation, Animator& animator) 
   {
     Animator::State nextState;
     if(velocity.velocity.x > 0)
     {
       if(!adjacencies.isOnFloor)
       {
-        nextState = Animator::State::FALL_RIGHT;
+        if(health.state == Health::State::DAMAGED)
+        {
+          nextState = Animator::State::FALL_RIGHT_DAMAGED;
+        }
+        else
+        {
+          nextState = Animator::State::FALL_RIGHT;
+        }
       }
       else
       {
-        nextState = Animator::State::RUN_RIGHT;
+        if(health.state == Health::State::DAMAGED)
+        {
+          nextState = Animator::State::RUN_RIGHT_DAMAGED;
+        }
+        else
+        {
+          nextState = Animator::State::RUN_RIGHT;
+        }
       }
     }
     else if(velocity.velocity.x < 0)
     {
       if(!adjacencies.isOnFloor)
       {
-        nextState = Animator::State::FALL_LEFT;
+        if(health.state == Health::State::DAMAGED)
+        {
+          nextState = Animator::State::FALL_LEFT_DAMAGED;
+        }
+        else
+        {
+          nextState = Animator::State::FALL_LEFT;
+        }
+      }
+      if(health.state == Health::State::DAMAGED)
+      {
+        nextState = Animator::State::RUN_LEFT_DAMAGED;
       }
       else
       {
@@ -63,11 +89,25 @@ void updateAnimators(entt::registry& registry)
     {
       if(!adjacencies.isOnFloor)
       {
-        nextState = Animator::State::FALL_IDLE;
+        if(health.state == Health::State::DAMAGED)
+        {
+          nextState = Animator::State::FALL_IDLE_DAMAGED;
+        }
+        else
+        {
+          nextState = Animator::State::FALL_IDLE;
+        }
       }
       else
       {
-        nextState = Animator::State::IDLE;
+        if(health.state == Health::State::DAMAGED)
+        {
+          nextState = Animator::State::IDLE_DAMAGED;
+        }
+        else
+        {
+          nextState = Animator::State::IDLE;
+        }
       }
   }
 

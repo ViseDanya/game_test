@@ -7,7 +7,9 @@
 #include "Systems/PhysicsSystem.h"
 #include "Constants.h"
 #include "TextureManager.h"
+#include "Components/Health.h"
 #include "Scene.h"
+#include <sstream>
 #include <imgui.h>
 #include <imgui_impl_sdl3.h>
 #include <imgui_impl_sdlrenderer3.h>
@@ -60,6 +62,14 @@ void LocalGame::showImGui()
     {
       createGameScene();
     }
+    auto view = registry.view<Health>();
+    view.each([&](entt::entity e, const Health& h) 
+    {
+      std::stringstream ss;
+      ss << "Player " << entt::to_integral(e) << " health: " << h.health;
+      ImGui::Text("%s", ss.str().c_str());
+    });
+
     ImGui::End();
 
     ImGui::Render();
@@ -142,6 +152,7 @@ void LocalGame::run()
       applyVelocityToPosition(registry);
       updateTrampolines(registry);
       updateFakePlatforms(registry);
+      updateHealth(registry);
       resolveCollisions(registry);
   
       SDL_SetRenderDrawColor(sdlRenderer, 0, 0, 0, 255);
