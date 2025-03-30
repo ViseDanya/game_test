@@ -64,4 +64,43 @@ if(HEADLESS)
 endif()
 
 target_include_directories(main PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/generated" "${CMAKE_CURRENT_BINARY_DIR}/generated/src/proto")
-target_link_libraries(main PRIVATE SDL3::SDL3 SDL3_image::SDL3_image EnTT::EnTT glm::glm ${ENET_LIBRARIES} protobuf::libprotobuf)
+target_link_libraries(main PRIVATE SDL3::SDL3 SDL3_image::SDL3_image EnTT::EnTT glm::glm protobuf::libprotobuf ${ENET_LIBRARIES})
+
+if(APPLE)
+
+    # Set the RPATH to the Frameworks directory inside the app bundle
+    set_target_properties(main PROPERTIES
+        INSTALL_RPATH "@executable_path/../Frameworks"
+    )
+
+    set(RESOURCE_PATH "${CMAKE_BINARY_DIR}/Game.app/Contents/Resources/")
+
+    target_compile_definitions(main PRIVATE RESOURCE_PATH="${RESOURCE_PATH}")
+
+    # Install the executable and the libraries into the app bundle structure
+    install(TARGETS main
+        DESTINATION "${CMAKE_BINARY_DIR}/Game.app/Contents/MacOS"
+    )
+
+    install(FILES   $<TARGET_FILE:SDL3::SDL3> $<TARGET_FILE:SDL3_image::SDL3_image> 
+                    $<TARGET_FILE:glm::glm> $<TARGET_FILE:protobuf::libprotobuf> ${ENET_LIBRARIES} 
+
+        DESTINATION "${CMAKE_BINARY_DIR}/Game.app/Contents/Frameworks"
+    )
+
+    # Specify the location of resources
+    set(RESOURCE_DIR "${CMAKE_SOURCE_DIR}/assets")
+
+    # Install resources into the Resources directory of the app bundle
+    install(DIRECTORY ${RESOURCE_DIR}/
+        DESTINATION "${CMAKE_BINARY_DIR}/Game.app/Contents/Resources"
+        FILES_MATCHING PATTERN "*.png"  # or "*.jpg", "*.wav" depending on the resources you want
+    )
+
+    install(FILES ${CMAKE_SOURCE_DIR}/Info.plist
+    DESTINATION ${CMAKE_BINARY_DIR}/Game.app/Contents
+)
+elseif(UNIX)
+    # For Linux or other Unix-based systems, resources might be in a 'resources' folder
+    set(RESOURCE_PATH ${RESOURCE_DIR}/)
+endif()

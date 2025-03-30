@@ -76,13 +76,16 @@ void updateAnimators(entt::registry& registry)
           nextState = Animator::State::FALL_LEFT;
         }
       }
-      if(health.state == Health::State::DAMAGED)
-      {
-        nextState = Animator::State::RUN_LEFT_DAMAGED;
-      }
       else
       {
-        nextState = Animator::State::RUN_LEFT;
+        if(health.state == Health::State::DAMAGED)
+        {
+          nextState = Animator::State::RUN_LEFT_DAMAGED;
+        }
+        else
+        {
+          nextState = Animator::State::RUN_LEFT;
+        }
       }
     }
     else

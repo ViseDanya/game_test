@@ -82,8 +82,8 @@ void GameClient::processAndSendInput(const bool* keystate)
 
 void GameClient::run()
 {
-    // connectToServer("23.236.62.199");
-    connectToServer("localhost");
+    connectToServer("34.56.4.111");
+    // connectToServer("localhost");
 
     TextureManager::loadAllTextures(sdlRenderer);
     Renderer renderer(sdlRenderer);
