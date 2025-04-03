@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Networking/ENetServer.h"
-#include "game.pb.h"
+#include "proto/game.pb.h"
 #include "entt/entt.hpp"
 #include <unordered_map>
 #include <imgui.h>
@@ -27,9 +27,6 @@ class GameServer : public ENetServer
     private:
     entt::registry registry;
     std::unordered_map<enet_uint16, ClientInfo> gameClients;
-
-    // std::unordered_map<enet_uint16, entt::entity> players;
-    // std::unordered_map<enet_uint16, game::PlayerInputMessage> playerInputState;
 
     void handlePlayerInput(entt::entity player, const game::PlayerInputMessage& playerInputMessage);
     void broadcastGameUpdates();

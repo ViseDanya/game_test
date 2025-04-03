@@ -12,7 +12,7 @@
 #include "Components/Adjacencies.h"
 #include "Components/Animation.h"
 #include "Components/Health.h"
-#include "game.pb.h"
+#include "proto/game.pb.h"
 #include <imgui.h>
 #include <imgui_impl_sdl3.h>
 #include <imgui_impl_sdlrenderer3.h>

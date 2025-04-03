@@ -1,4 +1,4 @@
-#include "game.pb.h"
+#include "proto/game.pb.h"
 #include "Entity.h"
 
 struct Camera;

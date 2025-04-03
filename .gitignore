@@ -1,3 +1,6 @@
 build/*
 build-headless/*
 .vscode/*
+*.pb.cc
+*.pb.h
+*.app
