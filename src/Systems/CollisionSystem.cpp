@@ -42,6 +42,11 @@ struct CollisionManager
         currentFrameCollisions.insert(getCollisionPair(e1,e2));
     }
 
+    bool areEntitiesCollisingThisFrame(entt::entity e1, entt::entity e2)
+    {
+        return currentFrameCollisions.count(getCollisionPair(e1,e2)) > 0;
+    }
+
     bool wereEntitesCollidingInPreviousFrame(entt::entity e1, entt::entity e2)
     {
         return previousFrameCollisions.count(getCollisionPair(e1,e2)) > 0;
@@ -246,7 +251,8 @@ void resolveHealthWithHealthChangerCollision(entt::registry& registry, Collision
 {
     auto& health = registry.get<Health>(collisionInfo.e1);
     auto& healthChanger = registry.get<HealthChanger>(collisionInfo.e2);
-    if(!healthChanger.onCollisionEnterOnly ||
+    if((healthChanger.onCollisionEnterOnly 
+        && !collisionManager.areEntitiesCollisingThisFrame(collisionInfo.e1, collisionInfo.e2)) ||
        !collisionManager.wereEntitesCollidingInPreviousFrame(collisionInfo.e1, collisionInfo.e2))
     {
         health.applyChangeToHealth(healthChanger.amount);
