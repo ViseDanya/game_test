@@ -10,6 +10,8 @@
 #include "Components/Fake.h"
 #include "Components/Health.h"
 #include "Components/HealthChanger.h"
+#include "Components/Ceiling.h"
+#include "Components/Type.h"
 #include "Constants.h"
 #include <numeric>
 #include <iostream>
@@ -32,6 +34,9 @@ struct CollisionManager
 {
     std::unordered_set<std::pair<entt::entity,entt::entity>, pair_hash> previousFrameCollisions;
     std::unordered_set<std::pair<entt::entity,entt::entity>, pair_hash> currentFrameCollisions;
+    std::unordered_set<std::pair<entt::entity,entt::entity>, pair_hash> ignoreCollisions;
+    std::unordered_set<entt::entity> ceilingCollisions;
+
     void registerCollision(entt::entity e1, entt::entity e2)
     {
         currentFrameCollisions.insert(getCollisionPair(e1,e2));
@@ -40,6 +45,36 @@ struct CollisionManager
     bool wereEntitesCollidingInPreviousFrame(entt::entity e1, entt::entity e2)
     {
         return previousFrameCollisions.count(getCollisionPair(e1,e2)) > 0;
+    }
+
+    void ignoreCollision(entt::entity e1, entt::entity e2)
+    {
+        ignoreCollisions.insert(getCollisionPair(e1,e2));
+    }
+
+    bool shouldIgnoreCollision(entt::entity e1, entt::entity e2)
+    {
+        return ignoreCollisions.count(getCollisionPair(e1,e2)) > 0;
+    }
+
+    void updateIgnoreCollisions()
+    {
+        for (auto it = ignoreCollisions.begin(); it != ignoreCollisions.end(); ) {
+            if (currentFrameCollisions.count(*it) == 0) {
+                it = ignoreCollisions.erase(it);
+            }
+            else {
+                ++it;
+            }
+        }
+    }
+
+    // this special case is stupid. It is like this because we have to know if the entity is on the floor this frame,
+    // which we only know after the dynamic-dynamic and dynamic-static collisions have run.
+    // Really, there should be two collision steps. A "physics" collision step, and a "logic" collision step.
+    void registerCeilingCollision(entt::entity e)
+    {
+        ceilingCollisions.insert(e);
     }
 
     std::pair<entt::entity, entt::entity> getCollisionPair(entt::entity e1, entt::entity e2)
@@ -207,18 +242,41 @@ void resolveDynamicWithFakeCollision(entt::registry& registry, CollisionInfo col
     }
 }
 
-void resolveHealthhWithHealthChangerCollision(entt::registry& registry, CollisionInfo collisionInfo)
+void resolveHealthWithHealthChangerCollision(entt::registry& registry, CollisionInfo collisionInfo)
 {
     auto& health = registry.get<Health>(collisionInfo.e1);
     auto& healthChanger = registry.get<HealthChanger>(collisionInfo.e2);
-    if(!collisionManager.wereEntitesCollidingInPreviousFrame(collisionInfo.e1, collisionInfo.e2))
+    if(!healthChanger.onCollisionEnterOnly ||
+       !collisionManager.wereEntitesCollidingInPreviousFrame(collisionInfo.e1, collisionInfo.e2))
     {
         health.applyChangeToHealth(healthChanger.amount);
     }
 }
 
+void resolveCeilingCollisions(entt::registry& registry)
+{
+    std::cout << "resolveCeilingCollisions" << std::endl;
+    for(const auto e : collisionManager.ceilingCollisions)
+    {
+        auto& adjacencies = registry.get<Adjacencies>(e);
+        if(adjacencies.isOnFloor)
+        {
+            std::cout << "isOnFloor" << std::endl;
+            entt::entity floorEntity = adjacencies.adjacencies[Direction::DOWN];
+            const auto& type = registry.get<TypeComponent>(floorEntity);
+            if(type.isPlatform())
+            {
+                std::cout << "ignoreCollision" << std::endl;
+                collisionManager.ignoreCollision(e, floorEntity);
+            }
+        }
+    }
+}
+
 void resolveDynamicWithStaticCollision(entt::registry& registry, CollisionInfo collisionInfo)
 {
+    std::cout << "resolve dynamic with static lol " << entt::to_integral(collisionInfo.e2) << std::endl;
+
     auto [box, velocity, adjacencies] = registry.get<Box, Velocity, Adjacencies>(collisionInfo.e1);
     const Direction collisionDirection = collisionInfo.direction;
     const Direction collisionOppositeDirection = getOppositeDirection(collisionDirection);
@@ -230,13 +288,17 @@ void resolveDynamicWithStaticCollision(entt::registry& registry, CollisionInfo c
     std::vector<entt::entity> adjacenciesInOppositeDirectionOfCollision = adjacencies.getAdjacencyList(registry, collisionOppositeDirection);
     for(entt::entity adjacentEntityInOppositeDirectionOfCollision : adjacenciesInOppositeDirectionOfCollision)
     {
-        Adjacencies& adjacencies = registry.get<Adjacencies>(adjacentEntityInOppositeDirectionOfCollision);
-        adjacencies.setIsOnStaticObject(collisionDirection, true);
-        Box& box = registry.get<Box>(adjacentEntityInOppositeDirectionOfCollision);
-        box.center += collisionOppositeDirectionVector * (collisionInfo.overlap + COLLISION_TOLERANCE);
+        if(registry.all_of<Adjacencies>(adjacentEntityInOppositeDirectionOfCollision))
+        {
+            Adjacencies& adjacencies = registry.get<Adjacencies>(adjacentEntityInOppositeDirectionOfCollision);
+            adjacencies.setIsOnStaticObject(collisionDirection, true);
+            Box& box = registry.get<Box>(adjacentEntityInOppositeDirectionOfCollision);
+            box.center += collisionOppositeDirectionVector * (collisionInfo.overlap + COLLISION_TOLERANCE);
+        }
     }
+    adjacencies.adjacencies[collisionDirection] = collisionInfo.e2;
+    std::cout << "resolve dynamic with static " << entt::to_integral(collisionInfo.e2) << std::endl;
 }
-
 
 void resolveCollision(entt::registry& registry, CollisionInfo collisionInfo)
 {
@@ -250,7 +312,11 @@ void resolveCollision(entt::registry& registry, CollisionInfo collisionInfo)
         }
         else
         {
-            resolveDynamicWithStaticCollision(registry, collisionInfo);
+            const auto& collider = registry.get<Collider>(collisionInfo.e2);
+            if(!collider.isTrigger)
+            {
+                resolveDynamicWithStaticCollision(registry, collisionInfo);
+            }
         }
         if(registry.all_of<Trampoline>(collisionInfo.e2))
         {
@@ -264,15 +330,22 @@ void resolveCollision(entt::registry& registry, CollisionInfo collisionInfo)
         {
             resolveDynamicWithFakeCollision(registry, collisionInfo);
         }
+        if(registry.all_of<Ceiling>(collisionInfo.e2))
+        {
+            std::cout << "registerCeilingCollision" << std::endl;
+            collisionManager.registerCeilingCollision(collisionInfo.e1);
+        }
     }
     if(registry.all_of<Health>(collisionInfo.e1) && registry.all_of<HealthChanger>(collisionInfo.e2))
     {
-        resolveHealthhWithHealthChangerCollision(registry, collisionInfo);
+        resolveHealthWithHealthChangerCollision(registry, collisionInfo);
     }
 }
 
 void resolveCollisions(entt::registry& registry)
 {
+    collisionManager.updateIgnoreCollisions();
+    collisionManager.ceilingCollisions.clear();
     collisionManager.previousFrameCollisions = std::move(collisionManager.currentFrameCollisions);
     collisionManager.currentFrameCollisions.clear();
     bool collisionDetected = true;
@@ -308,11 +381,16 @@ void resolveCollisions(entt::registry& registry)
                     {
                         collisionDetected =  true;
                         collisionManager.registerCollision(e1, e2);
-                        resolveCollision(registry, collisionInfo);
+                        if(!collisionManager.shouldIgnoreCollision(e1, e2))
+                        {
+                            resolveCollision(registry, collisionInfo);
+                        }
                     }
                 }
             });
         });
+        resolveCeilingCollisions(registry);
+        collisionManager.ceilingCollisions.clear();
         numCollisionIterations++;
     }
     // std::cout << "numCollisionIterations: " << numCollisionIterations << std::endl;

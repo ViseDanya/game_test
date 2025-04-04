@@ -23,6 +23,7 @@ enum EntityType
   WALL=5;
   SPIKES=6;
   FAKE_PLATFORM=7;
+  CEILING=8;
 }
 
 message vec2

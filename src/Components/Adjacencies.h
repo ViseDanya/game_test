@@ -62,8 +62,15 @@ struct Adjacencies
         while(currentAdjacencies.find(dir) != currentAdjacencies.end())
         {
             entt::entity currentEntity = currentAdjacencies[dir];
-            currentAdjacencies = registry.get<Adjacencies>(currentEntity).adjacencies;
-            adjacency_list.push_back(currentEntity);
+            if(!registry.all_of<Adjacencies>(currentEntity))
+            {
+                break;
+            }
+            else
+            {
+                currentAdjacencies = registry.get<Adjacencies>(currentEntity).adjacencies;
+                adjacency_list.push_back(currentEntity);
+            }
         }
         return adjacency_list;
     }

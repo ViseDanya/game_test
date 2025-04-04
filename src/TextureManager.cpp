@@ -11,6 +11,7 @@ constexpr char WALL_TEXTURE_PATH[] =  "assets/wall.png";
 constexpr char TRAMPOLINE_TEXTURE_PATH[] =  "assets/trampoline.png";
 constexpr char SPIKES_TEXTURE_PATH[] =  "assets/spikes.png";
 constexpr char FAKE_TEXTURE_PATH[] =  "assets/fake.png";
+constexpr char CEILING_TEXTURE_PATH[] = "assets/ceiling.png";
 
 SDL_Texture* TextureManager::normalTexture;
 SDL_Texture* TextureManager::conveyorLeftTexture;
@@ -20,6 +21,7 @@ SDL_Texture* TextureManager::wallTexture;
 SDL_Texture* TextureManager::trampolineTexture;
 SDL_Texture* TextureManager::spikesTexture;
 SDL_Texture* TextureManager::fakeTexture;
+SDL_Texture* TextureManager::ceilingTexture;
 
 std::string getFullTexturePath(const char* path)
 {
@@ -39,6 +41,7 @@ void TextureManager::loadAllTextures(SDL_Renderer* renderer)
 	trampolineTexture = loadTexture(getFullTexturePath(TRAMPOLINE_TEXTURE_PATH).c_str(), renderer);
 	spikesTexture = loadTexture(getFullTexturePath(SPIKES_TEXTURE_PATH).c_str(), renderer);
 	fakeTexture = loadTexture(getFullTexturePath(FAKE_TEXTURE_PATH).c_str(), renderer);
+	ceilingTexture = loadTexture(getFullTexturePath(CEILING_TEXTURE_PATH).c_str(), renderer);
 }
 
 SDL_Texture* TextureManager::loadTexture(const char* texturePath, SDL_Renderer* renderer)

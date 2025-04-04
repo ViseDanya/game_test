@@ -18,8 +18,11 @@ class LocalGame
     void spawnPlatform();
     void spawnWalls();
     void createGameScene();
+    glm::vec2 getCeilingPosition();
+    void updateCeiling();
     entt::registry registry;
     Camera camera;
+    entt::entity ceiling;
     float platformSpawnPoint;
     float wallSpawnPoint;
 };

@@ -3,4 +3,5 @@
 struct HealthChanger
 {
     int amount;
+    bool onCollisionEnterOnly = true;
 };

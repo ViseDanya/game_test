@@ -19,6 +19,8 @@ constexpr int TRAMPOLINE_HEIGHT = 22;
 constexpr int SPIKES_HEIGHT = 32;
 constexpr int FAKE_HEIGHT = 36;
 
+constexpr int CEILING_WIDTH = WINDOW_WIDTH-2*WALL_WIDTH;
+
 const float PLAYER_SPEED = 180;
 const float PLAYER_JUMP_HEIGHT = 60;
 const float PLAYER_JUMP_TIME_TO_APEX = .25;

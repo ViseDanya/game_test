@@ -15,6 +15,8 @@
 #include <imgui_impl_sdl3.h>
 #include <imgui_impl_sdlrenderer3.h>
 
+constexpr float CAMERA_SPEED = WINDOW_HEIGHT/(5*FPS);
+
 extern SDL_Renderer* sdlRenderer;
 
 static bool gravityEnabled = false;
@@ -25,6 +27,17 @@ void LocalGame::resetCamera()
 {
   camera.position = glm::vec2(WINDOW_WIDTH/2, WINDOW_HEIGHT/2);
   camera.zoom = 1;
+}
+
+glm::vec2 LocalGame::getCeilingPosition()
+{
+  return glm::vec2(camera.position.x, camera.position.y + WINDOW_HEIGHT/2 - PLATFORM_HEIGHT/2);
+}
+
+void LocalGame::updateCeiling()
+{
+  Box& box = registry.get<Box>(ceiling);
+  box.center.y -= CAMERA_SPEED;
 }
 
 void LocalGame::createGameScene()
@@ -41,6 +54,8 @@ void LocalGame::createGameScene()
 
   wallSpawnPoint = WALL_HEIGHT/2;
   spawnWalls();
+
+  ceiling = createCeilingEntity(registry, getCeilingPosition());
 }
 
 void LocalGame::showImGui()
@@ -103,6 +118,8 @@ void LocalGame::run()
     
     createGameScene();
 
+    ceiling = createCeilingEntity(registry, getCeilingPosition());
+
     while (!quit)
     {
       Uint64 frameStartTime = SDL_GetTicks();
@@ -133,7 +150,8 @@ void LocalGame::run()
       }
       else
       {
-        camera.position.y -= (WINDOW_HEIGHT/(5*FPS));
+        camera.position.y -= CAMERA_SPEED;
+        updateCeiling();
       }
   
       const bool *keystate = SDL_GetKeyboardState(nullptr);

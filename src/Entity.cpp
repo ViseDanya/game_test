@@ -13,6 +13,7 @@
 #include "Components/Fake.h"
 #include "Components/Health.h"
 #include "Components/HealthChanger.h"
+#include "Components/Ceiling.h"
 #include "TextureManager.h"
 #include <entt/entt.hpp>
 
@@ -36,7 +37,9 @@ entt::entity createEntity(const EntityType entityType, entt::registry& registry,
       return createSpikesEntity(registry, position);
     case EntityType::FAKE_PLATFORM:
       return createFakeEntity(registry, position);
-  }
+    case EntityType::CEILING:
+      return createCeilingEntity(registry, position);
+    }
 }
 
 entt::entity createPlayerEntity(entt::registry& registry, const glm::vec2& position)
@@ -182,4 +185,17 @@ entt::entity createFakeEntity(entt::registry& registry, const glm::vec2& positio
     registry.emplace<TypeComponent>(fakeEntity, EntityType::FAKE_PLATFORM);
     registry.emplace<HealthChanger>(fakeEntity, 1);
     return fakeEntity;
+}
+
+entt::entity createCeilingEntity(entt::registry& registry, const glm::vec2& position)
+{
+    const entt::entity ceilingEntity = registry.create();
+    const Box& box = registry.emplace<Box>(ceilingEntity, 
+      Box(position, glm::vec2(CEILING_WIDTH/2, PLATFORM_HEIGHT/2)));
+    registry.emplace<Collider>(ceilingEntity, Box(glm::vec2(0,PLATFORM_HEIGHT), glm::vec2(CEILING_WIDTH/2, PLATFORM_HEIGHT/2)), true, false);
+    registry.emplace<Sprite>(ceilingEntity, TextureManager::ceilingTexture, SDL_FRect{0,0,CEILING_WIDTH,PLATFORM_HEIGHT});
+    registry.emplace<TypeComponent>(ceilingEntity, EntityType::CEILING);
+    registry.emplace<HealthChanger>(ceilingEntity, -1, false);
+    registry.emplace<Ceiling>(ceilingEntity);
+    return ceilingEntity;
 }

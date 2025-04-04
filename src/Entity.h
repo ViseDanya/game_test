@@ -17,3 +17,5 @@ entt::entity createTrampolineEntity(entt::registry& registry, const glm::vec2& p
 entt::entity createWallEntity(entt::registry& registry, const glm::vec2& position);
 entt::entity createSpikesEntity(entt::registry& registry, const glm::vec2& position);
 entt::entity createFakeEntity(entt::registry& registry, const glm::vec2& position);
+entt::entity createCeilingEntity(entt::registry& registry, const glm::vec2& position);
+

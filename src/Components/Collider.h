@@ -7,4 +7,5 @@ struct Collider
     Box box;
     bool isEnabled = true;
     bool isOneWay = false;
+    bool isTrigger = false;
 };
