@@ -388,10 +388,14 @@ void resolvePrePhysicsCollisions(entt::registry& registry)
 
 void resolvePostPhysicsCollisions(entt::registry& registry)
 {
+    // never mind, the ceiling collisions need to be done during the physics step, because the ceiling is also
+    // a static obect. When a player is squashed between the ceiling and a platform, the ceiling collision needs
+    // to run so that the player can fall through the platform rather than running the collision logic for max iterations
+    
     // ceiling collisions need to be resolved after physics because we need to know if the player is on a platform
-    auto movingCollidableEntities = registry.view<Box, Velocity, Collider>();
-    auto ceilingEntites = registry.view<Box, Collider, Ceiling>();
-    resolveCollision(movingCollidableEntities, ceilingEntites, resolveDynamicWithCeilingCollision, registry);
+    // auto movingCollidableEntities = registry.view<Box, Velocity, Collider>();
+    // auto ceilingEntites = registry.view<Box, Collider, Ceiling>();
+    // resolveCollision(movingCollidableEntities, ceilingEntites, resolveDynamicWithCeilingCollision, registry);
 }
 
 void resolvePhysicsCollisions(entt::registry& registry)
