@@ -35,7 +35,13 @@ struct CollisionManager
     std::unordered_set<std::pair<entt::entity,entt::entity>, pair_hash> previousFrameCollisions;
     std::unordered_set<std::pair<entt::entity,entt::entity>, pair_hash> currentFrameCollisions;
     std::unordered_set<std::pair<entt::entity,entt::entity>, pair_hash> ignoreCollisions;
-    std::unordered_set<entt::entity> ceilingCollisions;
+
+    void reset()
+    {
+        updateIgnoreCollisions();
+        previousFrameCollisions = std::move(currentFrameCollisions);
+        currentFrameCollisions.clear();
+    }
 
     void registerCollision(entt::entity e1, entt::entity e2)
     {
@@ -72,14 +78,6 @@ struct CollisionManager
                 ++it;
             }
         }
-    }
-
-    // this special case is stupid. It is like this because we have to know if the entity is on the floor this frame,
-    // which we only know after the dynamic-dynamic and dynamic-static collisions have run.
-    // Really, there should be two collision steps. A "physics" collision step, and a "logic" collision step.
-    void registerCeilingCollision(entt::entity e)
-    {
-        ceilingCollisions.insert(e);
     }
 
     std::pair<entt::entity, entt::entity> getCollisionPair(entt::entity e1, entt::entity e2)
@@ -223,18 +221,15 @@ void resolveDynamicWithTrampolineCollision(entt::registry& registry, CollisionIn
     {
         trampoline.state = Trampoline::State::TRIGGERED;
         adjacencies.isOnFloor = false;
-        velocity.velocity.y = trampoline.impulse * 1./FPS;
+        velocity.velocity.y = trampoline.impulse * 1.f/FPS;
     }
 }
 
 void resolveDynamicWithConveyorCollision(entt::registry& registry, CollisionInfo collisionInfo)
 {
-    auto [box, adjacencies] = registry.get<Box, Adjacencies>(collisionInfo.e1);
-    auto conveyor = registry.get<Conveyor>(collisionInfo.e2);
-    if(collisionInfo.direction == Direction::DOWN)
-    {
-        box.center.x += conveyor.speed * 1./FPS;
-    }
+    auto& box = registry.get<Box>(collisionInfo.e1);
+    const auto& conveyor = registry.get<Conveyor>(collisionInfo.e2);
+    box.center.x += conveyor.speed * 1.f/FPS;
 }
 
 void resolveDynamicWithFakeCollision(entt::registry& registry, CollisionInfo collisionInfo)
@@ -251,30 +246,24 @@ void resolveHealthWithHealthChangerCollision(entt::registry& registry, Collision
 {
     auto& health = registry.get<Health>(collisionInfo.e1);
     auto& healthChanger = registry.get<HealthChanger>(collisionInfo.e2);
-    if((healthChanger.onCollisionEnterOnly 
-        && !collisionManager.areEntitiesCollisingThisFrame(collisionInfo.e1, collisionInfo.e2)) ||
-       !collisionManager.wereEntitesCollidingInPreviousFrame(collisionInfo.e1, collisionInfo.e2))
+    if(!collisionManager.wereEntitesCollidingInPreviousFrame(collisionInfo.e1, collisionInfo.e2))
     {
         health.applyChangeToHealth(healthChanger.amount);
     }
 }
 
-void resolveCeilingCollisions(entt::registry& registry)
+void resolveDynamicWithCeilingCollision(entt::registry& registry, CollisionInfo collisionInfo)
 {
-    std::cout << "resolveCeilingCollisions" << std::endl;
-    for(const auto e : collisionManager.ceilingCollisions)
+    auto& adjacencies = registry.get<Adjacencies>(collisionInfo.e1);
+    if(adjacencies.isOnFloor)
     {
-        auto& adjacencies = registry.get<Adjacencies>(e);
-        if(adjacencies.isOnFloor)
+        std::cout << "isOnFloor" << std::endl;
+        entt::entity floorEntity = adjacencies.adjacencies[Direction::DOWN];
+        const auto& type = registry.get<TypeComponent>(floorEntity);
+        if(type.isPlatform())
         {
-            std::cout << "isOnFloor" << std::endl;
-            entt::entity floorEntity = adjacencies.adjacencies[Direction::DOWN];
-            const auto& type = registry.get<TypeComponent>(floorEntity);
-            if(type.isPlatform())
-            {
-                std::cout << "ignoreCollision" << std::endl;
-                collisionManager.ignoreCollision(e, floorEntity);
-            }
+            std::cout << "ignoreCollision" << std::endl;
+            collisionManager.ignoreCollision(collisionInfo.e1, floorEntity);
         }
     }
 }
@@ -299,14 +288,14 @@ void resolveDynamicWithStaticCollision(entt::registry& registry, CollisionInfo c
             Adjacencies& adjacencies = registry.get<Adjacencies>(adjacentEntityInOppositeDirectionOfCollision);
             adjacencies.setIsOnStaticObject(collisionDirection, true);
             Box& box = registry.get<Box>(adjacentEntityInOppositeDirectionOfCollision);
-            box.center += collisionOppositeDirectionVector * (collisionInfo.overlap + COLLISION_TOLERANCE);
+            box.center += collisionOffset;
         }
     }
     adjacencies.adjacencies[collisionDirection] = collisionInfo.e2;
     std::cout << "resolve dynamic with static " << entt::to_integral(collisionInfo.e2) << std::endl;
 }
 
-void resolveCollision(entt::registry& registry, CollisionInfo collisionInfo)
+void resolvePhysicsCollision(entt::registry& registry, CollisionInfo collisionInfo)
 {
     const bool isFirstEntityDynamic = registry.all_of<Box, Velocity, Mass, Adjacencies>(collisionInfo.e1);
     const bool isSecondEntityDynamic = registry.all_of<Box, Velocity, Mass, Adjacencies>(collisionInfo.e2);
@@ -328,18 +317,13 @@ void resolveCollision(entt::registry& registry, CollisionInfo collisionInfo)
         {
             resolveDynamicWithTrampolineCollision(registry, collisionInfo);
         }
-        if(registry.all_of<Conveyor>(collisionInfo.e2))
+        if(registry.all_of<Ceiling>(collisionInfo.e2))
         {
-            resolveDynamicWithConveyorCollision(registry, collisionInfo);
+            resolveDynamicWithCeilingCollision(registry, collisionInfo);
         }
         if(registry.all_of<Fake>(collisionInfo.e2))
         {
             resolveDynamicWithFakeCollision(registry, collisionInfo);
-        }
-        if(registry.all_of<Ceiling>(collisionInfo.e2))
-        {
-            std::cout << "registerCeilingCollision" << std::endl;
-            collisionManager.registerCeilingCollision(collisionInfo.e1);
         }
     }
     if(registry.all_of<Health>(collisionInfo.e1) && registry.all_of<HealthChanger>(collisionInfo.e2))
@@ -348,56 +332,86 @@ void resolveCollision(entt::registry& registry, CollisionInfo collisionInfo)
     }
 }
 
-void resolveCollisions(entt::registry& registry)
+template<typename V1, typename V2>
+bool resolveCollision(V1 view1, V2 view2, std::function<void(entt::registry&, CollisionInfo)> collisionResolutionFunction, entt::registry& registry)
 {
-    collisionManager.updateIgnoreCollisions();
-    collisionManager.ceilingCollisions.clear();
-    collisionManager.previousFrameCollisions = std::move(collisionManager.currentFrameCollisions);
-    collisionManager.currentFrameCollisions.clear();
-    bool collisionDetected = true;
-    int numCollisionIterations = 0;
-    auto movingCollidableEntites = registry.view<Box, Velocity, Collider>();
-    auto collidableEntities = registry.view<Box, Collider>();
-    while(collisionDetected && numCollisionIterations < MAX_COLLISION_ITERATIONS)
+    bool collisionDetected = false;
+    for(const entt::entity e1 : view1)
     {
-        collisionDetected = false;
-        movingCollidableEntites.each([&](const entt::entity e1, Box& box1, Velocity& velocity1, Collider& collider1)
+        Box& box1 = registry.get<Box>(e1);
+        Velocity& velocity1 = registry.get<Velocity>(e1);
+        Collider& collider1 = registry.get<Collider>(e1);
+        for(const entt::entity e2 : view2)
         {
-            collidableEntities.each([&](const entt::entity e2, Box& box2, Collider& collider2)
+            Box& box2 = registry.get<Box>(e2);
+            Collider& collider2 = registry.get<Collider>(e2);
+            Box collider1InWorldSpace = Box(collider1.box.center + box1.center, collider1.box.size);
+            Box collider2InWorldSpace = Box(collider2.box.center + box2.center, collider2.box.size);
+            if(e1 != e2 && collider1.isEnabled && collider2.isEnabled &&
+                collider1InWorldSpace.intersects(collider2InWorldSpace))
             {
-                Box collider1InWorldSpace = Box(collider1.box.center + box1.center, collider1.box.size);
-                Box collider2InWorldSpace = Box(collider2.box.center + box2.center, collider2.box.size);
-                if(e1 != e2 && collider1.isEnabled && collider2.isEnabled &&
-                    collider1InWorldSpace.intersects(collider2InWorldSpace))
+                CollisionInfo collisionInfo;
+                collisionInfo.e1 = e1;
+                collisionInfo.e2 = e2;
+                const std::pair<Direction, float> collisionDirectionAndOverlap = 
+                    getCollisionDirectionAndOverlap(collider1InWorldSpace, collider2InWorldSpace);
+                collisionInfo.direction = collisionDirectionAndOverlap.first;
+                collisionInfo.overlap = collisionDirectionAndOverlap.second;
+                // std::cout << "Collision overlap:" << collisionInfo.overlap << std::endl;
+                // std::cout << "Collision direction: " << collisionInfo.direction << std::endl;
+                if(collider2.isOneWay && (collisionInfo.direction != Direction::DOWN || velocity1.velocity.y >= 0))
                 {
-                    CollisionInfo collisionInfo;
-                    collisionInfo.e1 = e1;
-                    collisionInfo.e2 = e2;
-                    const std::tuple<Direction, float> collisionDirectionAndOverlap = 
-                        getCollisionDirectionAndOverlap(collider1InWorldSpace, collider2InWorldSpace);
-                    collisionInfo.direction = std::get<0>(collisionDirectionAndOverlap);
-                    collisionInfo.overlap = std::get<1>(collisionDirectionAndOverlap);
-                    // std::cout << "Colllision overlap:" << collisionInfo.overlap << std::endl;
-                    // std::cout << "Collision direction: " << collisionInfo.direction << std::endl;
-                    if(collider2.isOneWay && (collisionInfo.direction != Direction::DOWN || velocity1.velocity.y >= 0))
-                        {
-                            return;
-                        }
-                    else
+                    continue;
+                }
+                else
+                {
+                    collisionManager.registerCollision(e1, e2);
+                    if(!collisionManager.shouldIgnoreCollision(e1, e2))
                     {
-                        collisionDetected =  true;
-                        collisionManager.registerCollision(e1, e2);
-                        if(!collisionManager.shouldIgnoreCollision(e1, e2))
-                        {
-                            resolveCollision(registry, collisionInfo);
-                        }
+                        collisionDetected = true;
+                        collisionResolutionFunction(registry, collisionInfo);
                     }
                 }
-            });
-        });
-        resolveCeilingCollisions(registry);
-        collisionManager.ceilingCollisions.clear();
+            }
+        }
+    }
+    return collisionDetected;
+}
+
+void resolvePrePhysicsCollisions(entt::registry& registry)
+{
+    // conveyor collisions need to be resolved before physics because they move the players
+    auto movingCollidableEntities = registry.view<Box, Velocity, Collider>();
+    auto conveyorEntities = registry.view<Box, Collider, Conveyor>();
+    resolveCollision(movingCollidableEntities, conveyorEntities, resolveDynamicWithConveyorCollision, registry);
+}
+
+void resolvePostPhysicsCollisions(entt::registry& registry)
+{
+    // ceiling collisions need to be resolved after physics because we need to know if the player is on a platform
+    auto movingCollidableEntities = registry.view<Box, Velocity, Collider>();
+    auto ceilingEntites = registry.view<Box, Collider, Ceiling>();
+    resolveCollision(movingCollidableEntities, ceilingEntites, resolveDynamicWithCeilingCollision, registry);
+}
+
+void resolvePhysicsCollisions(entt::registry& registry)
+{
+    auto movingCollidableEntites = registry.view<Box, Velocity, Collider>();
+    auto collidableEntities = registry.view<Box, Collider>();
+    bool collisionDetected = true;
+    int numCollisionIterations = 0;
+    while(collisionDetected && numCollisionIterations < MAX_COLLISION_ITERATIONS)
+    {
+        collisionDetected = resolveCollision(movingCollidableEntites, collidableEntities, resolvePhysicsCollision, registry);
         numCollisionIterations++;
     }
     // std::cout << "numCollisionIterations: " << numCollisionIterations << std::endl;
+}
+
+void resolveCollisions(entt::registry& registry)
+{
+    collisionManager.reset();
+    resolvePrePhysicsCollisions(registry);
+    resolvePhysicsCollisions(registry);
+    resolvePostPhysicsCollisions(registry);
 }

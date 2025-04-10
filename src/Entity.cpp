@@ -55,7 +55,7 @@ entt::entity createPlayerEntity(entt::registry& registry, const glm::vec2& posit
     registry.emplace<Adjacencies>(playerEntity);
     registry.emplace<Animation>(playerEntity, Animation::createPlayerIdleAnimation());
     registry.emplace<Animator>(playerEntity, Animator::createPlayerAnimtor());
-    registry.emplace<Health>(playerEntity, 10);
+    registry.emplace<Health>(playerEntity, 12);
     registry.emplace<TypeComponent>(playerEntity, EntityType::PLAYER);
     return playerEntity;
 }
@@ -122,7 +122,7 @@ entt::entity createConveyorRightEntity(entt::registry& registry, const glm::vec2
     const entt::entity conveyorEntity = createConveyorEntity(registry, position);
     registry.emplace<Sprite>(conveyorEntity, TextureManager::conveyorRightTexture, SDL_FRect{0,0,PLATFORM_WIDTH,PLATFORM_HEIGHT});
     Conveyor& conveyor = registry.get<Conveyor>(conveyorEntity);
-    conveyor.speed = PLAYER_SPEED/2;
+    conveyor.speed = PLAYER_SPEED/2.f;
     registry.emplace<TypeComponent>(conveyorEntity, EntityType::CONVEYOR_RIGHT);
     return conveyorEntity;
 }
@@ -132,7 +132,7 @@ entt::entity createConveyorLeftEntity(entt::registry& registry, const glm::vec2&
     const entt::entity conveyorEntity = createConveyorEntity(registry, position);
     registry.emplace<Sprite>(conveyorEntity, TextureManager::conveyorLeftTexture, SDL_FRect{0,0,PLATFORM_WIDTH,PLATFORM_HEIGHT});
     Conveyor& conveyor = registry.get<Conveyor>(conveyorEntity);
-    conveyor.speed = -PLAYER_SPEED/2;
+    conveyor.speed = -PLAYER_SPEED/2.f;
     registry.emplace<TypeComponent>(conveyorEntity, EntityType::CONVEYOR_LEFT);
     return conveyorEntity;
 }
@@ -169,7 +169,7 @@ entt::entity createSpikesEntity(entt::registry& registry, const glm::vec2& posit
     registry.emplace<Collider>(spikes, Box(glm::vec2(0,-SPIKES_HEIGHT/4), glm::vec2(PLATFORM_WIDTH/2,7)), true, true);
     registry.emplace<Sprite>(spikes, TextureManager::spikesTexture, SDL_FRect{0,0,PLATFORM_WIDTH,SPIKES_HEIGHT});
     registry.emplace<TypeComponent>(spikes, EntityType::SPIKES);
-    registry.emplace<HealthChanger>(spikes, -1);
+    registry.emplace<HealthChanger>(spikes, -5);
     return spikes;
 }
 
@@ -195,7 +195,7 @@ entt::entity createCeilingEntity(entt::registry& registry, const glm::vec2& posi
     registry.emplace<Collider>(ceilingEntity, Box(glm::vec2(0,PLATFORM_HEIGHT), glm::vec2(CEILING_WIDTH/2, PLATFORM_HEIGHT/2)), true, false);
     registry.emplace<Sprite>(ceilingEntity, TextureManager::ceilingTexture, SDL_FRect{0,0,CEILING_WIDTH,PLATFORM_HEIGHT});
     registry.emplace<TypeComponent>(ceilingEntity, EntityType::CEILING);
-    registry.emplace<HealthChanger>(ceilingEntity, -1, false);
+    registry.emplace<HealthChanger>(ceilingEntity, -5);
     registry.emplace<Ceiling>(ceilingEntity);
     return ceilingEntity;
 }

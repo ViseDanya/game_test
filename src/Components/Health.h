@@ -10,7 +10,7 @@ struct Health
         IDLE, DAMAGED
     };
 
-    int health = 10;
+    int health = 12;
     int minHealth = 0;
     int maxHealth = health;
     State state;
