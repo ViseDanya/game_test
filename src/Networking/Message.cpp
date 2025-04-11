@@ -90,3 +90,13 @@ game::Message createPositionUpdateMessage(const entt::entity entity, const glm::
     message.mutable_position_update_message()->CopyFrom(positionUpdateMessage);
     return message;
 }
+
+game::Message createDestroyEntityMessage(const entt::entity entity)
+{
+    game::DestroyEntityMessage destroyEntityMessage;
+    destroyEntityMessage.set_entity(entt::to_integral(entity));
+    game::Message message;
+    message.set_message_type(game::MessageType::DESTROY_ENTITY_MESSAGE);
+    message.mutable_destroy_entity_message()->CopyFrom(destroyEntityMessage);
+    return message;
+}

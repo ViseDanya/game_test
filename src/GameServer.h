@@ -55,6 +55,7 @@ class GameServer : public ENetServer
     float wallSpawnPoint;
 
     void onEntityCreated(entt::entity entity);
+    void onEntityDestroyed(entt::entity entity);
 
     bool areAllPlayersReady();
     void startGame();
@@ -62,4 +63,7 @@ class GameServer : public ENetServer
     entt::entity ceiling;
     glm::vec2 getCeilingPosition();
     void updateCeiling();
+
+    void updatePlayersAlive();
+    bool areAllPlayersDead();
 };

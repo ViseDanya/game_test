@@ -291,6 +291,14 @@ void GameClient::handleMessageReceived(const ENetEvent& event)
       box.center.y = positionUpdateMessage.position().y(); 
       break;
     }
+    case game::DESTROY_ENTITY_MESSAGE:
+    {
+      const game::DestroyEntityMessage& destroyEntityMessage = message.destroy_entity_message();
+      const entt::entity serverEntity = entt::entity{destroyEntityMessage.entity()};
+      entt::entity clientEntity = serverToClientEntityMap[serverEntity];
+      registry.destroy(clientEntity);
+      break;
+    }
     default:
     {
       std::cerr << "Unknown message type!: " << message.message_type() << std::endl;

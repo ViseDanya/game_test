@@ -12,6 +12,7 @@ enum MessageType
   PLAY_ANIMATION_MESSAGE = 5;
   HEALTH_UPDATE_MESSAGE = 6;
   POSITION_UPDATE_MESSAGE = 7;
+  DESTROY_ENTITY_MESSAGE = 8;
 }
 
 enum EntityType
@@ -85,6 +86,11 @@ message PositionUpdateMessage
   vec2 position = 2;
 }
 
+message DestroyEntityMessage 
+{
+  uint32 entity = 1;
+}
+
 message Message
 {
   MessageType message_type = 1;
@@ -98,5 +104,6 @@ message Message
     PlayAnimationMessage play_animation_message = 7;
     HealthUpdateMessage health_update_message = 8;
     PositionUpdateMessage position_update_message = 9;
+    DestroyEntityMessage destroy_entity_message = 10;
   }
 }

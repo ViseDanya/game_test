@@ -50,8 +50,11 @@ glm::vec2 GameServer::getCeilingPosition()
 
 void GameServer::updateCeiling()
 {
-  Box& box = registry.get<Box>(ceiling);
-  box.center.y -= CAMERA_SPEED;
+  if(registry.valid(ceiling))
+  {
+    Box& box = registry.get<Box>(ceiling);
+    box.center.y -= CAMERA_SPEED;
+  }
 }
 
 void GameServer::spawnPlatform()
@@ -108,10 +111,47 @@ void GameServer::onEntityCreated(entt::entity entity)
   broadcastMessageToClients(createEntityMessage);
 }
 
+void GameServer::onEntityDestroyed(entt::entity entity)
+{
+  std::cout << "onEntityDesstroyed" << std::endl;
+  game::Message destroyEntityMessage = createDestroyEntityMessage(entity);
+  broadcastMessageToClients(destroyEntityMessage);
+  std::cout << "entitydddestroyed sent" << std::endl;
+}
+
+void GameServer::updatePlayersAlive()
+{
+  for (const auto& [clientID, client] : gameClients) 
+  {
+    if(registry.valid(client.player))
+    {
+      const Health& health = registry.get<Health>(client.player);
+      const Box& box = registry.get<Box>(client.player);
+      if(health.health == 0 || (box.bottom() < camera.position.y - WINDOW_HEIGHT/2 - 3*PLATFORM_HEIGHT))
+      {
+        registry.destroy(client.player);
+      }
+    }
+  }
+}
+
+bool GameServer::areAllPlayersDead()
+{
+  for (const auto& [clientID, client] : gameClients) 
+  {
+    if(registry.valid(client.player))
+    {
+      return false;
+    }
+  }
+  return true;
+}
+
 void GameServer::run()
 {
     startServer();
     registry.on_construct<TypeComponent>().connect<&GameServer::onEntityCreated>(*this);
+    registry.on_destroy<entt::entity>().connect<&GameServer::onEntityDestroyed>(*this);
 
     TextureManager::loadAllTextures(sdlRenderer);
     Renderer renderer(sdlRenderer);
@@ -122,8 +162,7 @@ void GameServer::run()
   float mouseX;
   float mouseY;
 
-  camera.position = glm::vec2(WINDOW_WIDTH/2, WINDOW_HEIGHT/2);
-  camera.zoom = 1;
+  resetCamera();
 
   while (!quit)
   {
@@ -176,7 +215,10 @@ void GameServer::run()
 
     for (const auto& [clientID, client] : gameClients) 
     {
+      if(registry.valid(client.player))
+      {
         handlePlayerInput(client.player, client.playerInputState);
+      }
     }
 
     resetAdjacencies(registry);
@@ -185,8 +227,24 @@ void GameServer::run()
     updateFakePlatforms(registry);
     updateHealth(registry);
     resolveCollisions(registry);
+    updatePlayersAlive();
 
     broadcastGameUpdates();
+
+    if(areAllPlayersDead())
+    {
+      registry.clear();
+      resetCamera();
+      gameStarted = false;
+      gravityEnabled = false;
+      manualCamera = true;
+      for (auto& [clientID, client] : gameClients)
+      {
+        client.ready = false;
+        entt::entity player = createPlayerEntity(registry, glm::vec2(WINDOW_WIDTH/2, WINDOW_HEIGHT/2));
+        client.player = player;
+      }
+    }
 
     #ifndef HEADLESS
     SDL_SetRenderDrawColor(sdlRenderer, 0, 0, 0, 255);
@@ -328,8 +386,11 @@ void GameServer::broadcastDynamicEntityUpdates()
   for (const auto& pair : gameClients) 
   {
     entt::entity player = pair.second.player;
-    game::Message playerUpdateMessage = createDynamicEntityUpdateMessage(registry, player);
-    broadcastMessageToClients(playerUpdateMessage);
+    if(registry.valid(player))
+    {
+      game::Message playerUpdateMessage = createDynamicEntityUpdateMessage(registry, player);
+      broadcastMessageToClients(playerUpdateMessage);
+    }
   }
 }
 
