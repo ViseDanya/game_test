@@ -43,6 +43,7 @@ void ENetClient::connectToServer(const char* address)
     if (enet_host_service (client, &enetEvent, 5000) > 0 &&
         enetEvent.type == ENET_EVENT_TYPE_CONNECT)
     {
+        handleServerConnected(enetEvent);
         std::cout << "Connection to some.server.net:1234 succeeded." << std::endl;
     }
     else

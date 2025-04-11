@@ -21,11 +21,13 @@ target_include_directories(main PRIVATE
     "src/Systems" 
     "src/imgui" 
     "src/imgui/backends"
+    "src/imgui/misc/cpp"
     ${ENET_INCLUDE_DIRS}
     ${Protobuf_INCLUDE_DIRS})
 
 file(GLOB IMGUI_SOURCES
     "src/imgui/*.cpp"
+    "src/imgui/misc/cpp/*.cpp"
     "src/imgui/backends/imgui_impl_sdl3.cpp"
     "src/imgui/backends/imgui_impl_sdlrenderer3.cpp")
 

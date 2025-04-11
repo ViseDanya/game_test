@@ -1,5 +1,6 @@
 #include "proto/game.pb.h"
 #include "Entity.h"
+#include <glm/vec2.hpp>
 
 struct Camera;
 struct Health;
@@ -9,3 +10,4 @@ game::Message createDynamicEntityUpdateMessage(entt::registry& registry, const e
 game::Message createCameraUpdateMessage(const Camera& camera);
 game::Message createPlayAnimationMessage(const entt::entity entity);
 game::Message createHealthUpdateMessage(const entt::entity entity, const Health& health);
+game::Message createPositionUpdateMessage(const entt::entity entity, const glm::vec2& position);

@@ -19,8 +19,13 @@ class GameClient : public ENetClient
 
     void handleMessageReceived(const ENetEvent& event) override;
     void handleServerDisconnected(const ENetEvent& event) override;
+    void handleServerConnected(const ENetEvent& event) override;
 
     void sendReady();
     void processAndSendInput(const bool* keystate);
     void showUI();
+    void showConnectUI();
+
+    void runConnectionLoop();
+    void runGameLoop();
 };

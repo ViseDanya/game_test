@@ -15,8 +15,6 @@
 #include <imgui_impl_sdl3.h>
 #include <imgui_impl_sdlrenderer3.h>
 
-constexpr float CAMERA_SPEED = WINDOW_HEIGHT/(5*FPS);
-
 extern SDL_Renderer* sdlRenderer;
 
 static bool gravityEnabled = false;

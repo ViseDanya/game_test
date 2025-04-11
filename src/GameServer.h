@@ -7,6 +7,7 @@
 #include <imgui.h>
 #include <imgui_impl_sdl3.h>
 #include <imgui_impl_sdlrenderer3.h>
+#include <glm/vec2.hpp>
 
 class GameServer : public ENetServer
 {
@@ -35,6 +36,7 @@ class GameServer : public ENetServer
     void broadcastTrampolineUpdates();
     void broadcastFakeUpdates();
     void broadcastHealthUpdates();
+    void broadcastCeilingUpdates();
 
     void handleClientConnected(const ENetEvent& event) override;
     void handleMessageReceived(const ENetEvent& event) override;
@@ -56,4 +58,8 @@ class GameServer : public ENetServer
 
     bool areAllPlayersReady();
     void startGame();
+
+    entt::entity ceiling;
+    glm::vec2 getCeilingPosition();
+    void updateCeiling();
 };

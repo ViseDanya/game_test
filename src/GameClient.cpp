@@ -19,6 +19,8 @@
 
 extern SDL_Renderer* sdlRenderer;
 static Camera camera;
+static char serverAddress[256] = "localhost";
+static bool connected = false;
 
 void GameClient::sendReady()
 {
@@ -46,6 +48,55 @@ void GameClient::showUI()
     }
     ImGui::SameLine();
     ImGui::Text(ready ? "Ready" : "Not Ready");
+    ImGui::End();
+
+    ImGui::Render();
+    ImGui_ImplSDLRenderer3_RenderDrawData(ImGui::GetDrawData(), sdlRenderer);
+}
+
+void GameClient::runConnectionLoop()
+{
+  bool quit = false;
+  SDL_Event event;
+  while (!quit && !connected)
+  {
+    while (SDL_PollEvent(&event) != 0)
+    {
+      ImGui_ImplSDL3_ProcessEvent(&event);
+      if (event.type == SDL_EVENT_QUIT)
+      {
+        quit = true;
+      }
+    }
+
+    showConnectUI();
+
+    SDL_RenderPresent(sdlRenderer);
+  }
+
+  if(connected)
+  {
+    runGameLoop();
+  }
+}
+
+void GameClient::showConnectUI()
+{
+    ImGui_ImplSDLRenderer3_NewFrame();
+    ImGui_ImplSDL3_NewFrame();
+    ImGui::NewFrame();
+    ImGui::SetNextWindowPos({10, 10});
+    ImGui::Begin("Options", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
+
+    ImGui::Text("Server Address");
+    ImGui::SameLine();
+    ImGui::InputText("##label", serverAddress, IM_ARRAYSIZE(serverAddress));
+
+    if (ImGui::Button("Connect"))
+    {
+      connectToServer(serverAddress);
+    }
+
     ImGui::End();
 
     ImGui::Render();
@@ -82,10 +133,14 @@ void GameClient::processAndSendInput(const bool* keystate)
 
 void GameClient::run()
 {
-    connectToServer("34.56.4.111");
+    // connectToServer("34.56.4.111");
     // connectToServer("localhost");
+  runConnectionLoop();
+}
 
-    TextureManager::loadAllTextures(sdlRenderer);
+void GameClient::runGameLoop()
+{
+  TextureManager::loadAllTextures(sdlRenderer);
     Renderer renderer(sdlRenderer);
 
     bool quit = false;
@@ -138,6 +193,11 @@ void GameClient::run()
       SDL_Delay(1000/FPS - elapsedTime);
     }
   }
+}
+
+void GameClient::handleServerConnected(const ENetEvent& event)
+{
+    connected = true;
 }
 
 void GameClient::handleServerDisconnected(const ENetEvent& event)
@@ -219,6 +279,16 @@ void GameClient::handleMessageReceived(const ENetEvent& event)
       Health& health = registry.get<Health>(clientEntity);
       health.health = healthUpdateMessage.health();
       health.state = healthUpdateMessage.is_damaged() ? Health::State::DAMAGED : Health::State::IDLE;
+      break;
+    }
+    case game::POSITION_UPDATE_MESSAGE:
+    {
+      const game::PositionUpdateMessage& positionUpdateMessage = message.position_update_message();
+      const entt::entity serverEntity = entt::entity{positionUpdateMessage.entity()};
+      entt::entity clientEntity = serverToClientEntityMap[serverEntity];
+      Box& box = registry.get<Box>(clientEntity);
+      box.center.x = positionUpdateMessage.position().x();
+      box.center.y = positionUpdateMessage.position().y(); 
       break;
     }
     default:

@@ -11,6 +11,7 @@ enum MessageType
   CLIENT_READY_MESSAGE = 4;
   PLAY_ANIMATION_MESSAGE = 5;
   HEALTH_UPDATE_MESSAGE = 6;
+  POSITION_UPDATE_MESSAGE = 7;
 }
 
 enum EntityType
@@ -78,6 +79,12 @@ message HealthUpdateMessage
   bool is_damaged = 3;
 }
 
+message PositionUpdateMessage
+{
+  uint32 entity = 1;
+  vec2 position = 2;
+}
+
 message Message
 {
   MessageType message_type = 1;
@@ -90,5 +97,6 @@ message Message
     ClientReadyMessage client_ready_message = 6;
     PlayAnimationMessage play_animation_message = 7;
     HealthUpdateMessage health_update_message = 8;
+    PositionUpdateMessage position_update_message = 9;
   }
 }

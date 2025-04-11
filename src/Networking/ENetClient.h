@@ -17,4 +17,5 @@ private:
 
     virtual void handleMessageReceived(const ENetEvent& event) = 0;
     virtual void handleServerDisconnected(const ENetEvent& event) = 0;
+    virtual void handleServerConnected(const ENetEvent& event) = 0;
 };

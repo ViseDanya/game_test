@@ -13,6 +13,7 @@
 #include "Components/Velocity.h"
 #include "Components/Adjacencies.h"
 #include "Components/Health.h"
+#include "Components/Ceiling.h"
 #include "Networking/Message.h"
 #include "Scene.h"
 #include <imgui.h>
@@ -38,6 +39,19 @@ void GameServer::createGameScene()
 
   wallSpawnPoint = WALL_HEIGHT/2;
   spawnWalls();
+
+  ceiling = createCeilingEntity(registry, getCeilingPosition());
+}
+
+glm::vec2 GameServer::getCeilingPosition()
+{
+  return glm::vec2(camera.position.x, camera.position.y + WINDOW_HEIGHT/2 - PLATFORM_HEIGHT/2);
+}
+
+void GameServer::updateCeiling()
+{
+  Box& box = registry.get<Box>(ceiling);
+  box.center.y -= CAMERA_SPEED;
 }
 
 void GameServer::spawnPlatform()
@@ -143,7 +157,8 @@ void GameServer::run()
     }
     else
     {
-      camera.position.y -= (WINDOW_WIDTH/(5*FPS));
+      camera.position.y -= CAMERA_SPEED;
+      updateCeiling();
     }
 
     if(gameStarted && camera.position.y - platformSpawnPoint < 2*WINDOW_HEIGHT)
@@ -305,6 +320,7 @@ void GameServer::broadcastGameUpdates()
   broadcastTrampolineUpdates();
   broadcastFakeUpdates();
   broadcastHealthUpdates();
+  broadcastCeilingUpdates();
 }
 
 void GameServer::broadcastDynamicEntityUpdates()
@@ -356,6 +372,16 @@ void GameServer::broadcastHealthUpdates()
   {
     game::Message healthUpdateMessage = createHealthUpdateMessage(e, health);
     broadcastMessageToClients(healthUpdateMessage);
+  });
+}
+
+void GameServer::broadcastCeilingUpdates()
+{
+  auto view = registry.view<const Box, const Ceiling>();
+  view.each([&](entt::entity e, const Box& box) 
+  {
+    game::Message positionUpdateMessage = createPositionUpdateMessage(e, box.center);
+    broadcastMessageToClients(positionUpdateMessage);
   });
 }
 

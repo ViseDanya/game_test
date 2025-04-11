@@ -77,3 +77,16 @@ game::Message createHealthUpdateMessage(const entt::entity entity, const Health&
     message.mutable_health_update_message()->CopyFrom(healthUpdateMessage);
     return message;
 }
+
+game::Message createPositionUpdateMessage(const entt::entity entity, const glm::vec2& position)
+{
+    game::PositionUpdateMessage positionUpdateMessage;
+    positionUpdateMessage.set_entity(entt::to_integral(entity));
+    game::vec2* entityPosition = positionUpdateMessage.mutable_position();
+    entityPosition->set_x(position.x);
+    entityPosition->set_y(position.y);
+    game::Message message;
+    message.set_message_type(game::MessageType::POSITION_UPDATE_MESSAGE);
+    message.mutable_position_update_message()->CopyFrom(positionUpdateMessage);
+    return message;
+}
