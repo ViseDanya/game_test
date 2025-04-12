@@ -12,6 +12,7 @@
 #include "Components/Adjacencies.h"
 #include "Components/Animation.h"
 #include "Components/Health.h"
+#include "Components/Name.h"
 #include "proto/game.pb.h"
 #include <imgui.h>
 #include <imgui_impl_sdl3.h>
@@ -20,6 +21,7 @@
 extern SDL_Renderer* sdlRenderer;
 static Camera camera;
 static char serverAddress[256] = "localhost";
+static char name[256] = "Sexy Beast";
 static bool connected = false;
 
 void GameClient::sendReady()
@@ -48,6 +50,19 @@ void GameClient::showUI()
     }
     ImGui::SameLine();
     ImGui::Text(ready ? "Ready" : "Not Ready");
+
+    auto view = registry.view<const Name, const Health>();
+    int i = 0;
+    view.each([&](const Name& name, const Health& health)
+    {
+      ImGui::PushID(i);
+      std::stringstream ss;
+      ss << name.name << ": " << health.health;
+      ImGui::Text("%s", ss.str().c_str());
+      ImGui::PopID();
+    } );
+
+
     ImGui::End();
 
     ImGui::Render();
@@ -90,7 +105,11 @@ void GameClient::showConnectUI()
 
     ImGui::Text("Server Address");
     ImGui::SameLine();
-    ImGui::InputText("##label", serverAddress, IM_ARRAYSIZE(serverAddress));
+    ImGui::InputText("##labelServer Address", serverAddress, IM_ARRAYSIZE(serverAddress));
+
+    ImGui::Text("Name");
+    ImGui::SameLine();
+    ImGui::InputText("##labelName", name, IM_ARRAYSIZE(name));
 
     if (ImGui::Button("Connect"))
     {
@@ -198,6 +217,14 @@ void GameClient::runGameLoop()
 void GameClient::handleServerConnected(const ENetEvent& event)
 {
     connected = true;
+    game::ClientNameMessage clientNameMessage;
+    clientNameMessage.set_name(name);
+    game::Message message;
+    message.set_message_type(game::MessageType::CLIENT_NAME_MESSAGE);
+    message.mutable_client_name_message()->CopyFrom(clientNameMessage);
+    std::string serializedMessage;
+    message.SerializeToString(&serializedMessage);
+    sendMessageToServer(serializedMessage.c_str(), serializedMessage.length());
 }
 
 void GameClient::handleServerDisconnected(const ENetEvent& event)
@@ -227,6 +254,7 @@ void GameClient::handleMessageReceived(const ENetEvent& event)
       position.y = createEntityMessage.position().y();
       entt::entity clientEntity = createEntity(static_cast<EntityType>(createEntityMessage.entity_type()), registry, position);
       serverToClientEntityMap[entt::entity{createEntityMessage.entity()}] = clientEntity;
+      std::cout << entt::to_integral(clientEntity) << std::endl;
       break;
     }
     case game::DYNAMIC_ENTITY_UPDATE_MESSAGE:
@@ -297,6 +325,25 @@ void GameClient::handleMessageReceived(const ENetEvent& event)
       const entt::entity serverEntity = entt::entity{destroyEntityMessage.entity()};
       entt::entity clientEntity = serverToClientEntityMap[serverEntity];
       registry.destroy(clientEntity);
+      break;
+    }
+    case game::NAME_UPDATE_MESSAGE:
+    {
+      const game::NameUpdateMessage& nameUpdateMessage = message.name_update_message();
+      std::cout << "Received nameUpdateMessage: " << event.peer->incomingPeerID << ", "
+      << nameUpdateMessage.name() << std::endl;
+
+      const entt::entity serverEntity = entt::entity{nameUpdateMessage.entity()};
+      entt::entity clientEntity = serverToClientEntityMap[serverEntity];
+      std::cout << entt::to_integral(clientEntity) << std::endl;
+      if(Name* name = registry.try_get<Name>(clientEntity))
+      {
+        name->name = nameUpdateMessage.name();
+      }
+      else
+      {
+        registry.emplace<Name>(clientEntity, nameUpdateMessage.name());
+      }
       break;
     }
     default:

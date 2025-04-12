@@ -14,6 +14,7 @@
 #include "Components/Adjacencies.h"
 #include "Components/Health.h"
 #include "Components/Ceiling.h"
+#include "Components/Name.h"
 #include "Networking/Message.h"
 #include "Scene.h"
 #include <imgui.h>
@@ -243,7 +244,9 @@ void GameServer::run()
         client.ready = false;
         entt::entity player = createPlayerEntity(registry, glm::vec2(WINDOW_WIDTH/2, WINDOW_HEIGHT/2));
         client.player = player;
+        registry.emplace<Name>(player, client.name);
       }
+      broadcastNames();
     }
 
     #ifndef HEADLESS
@@ -291,8 +294,7 @@ void GameServer::handleClientConnected(const ENetEvent& event)
     entt::entity player = createPlayerEntity(registry, position);
     gameClients[event.peer->incomingPeerID].player = player;
 
-    // game::Message createEntityMessage = createCreateEntityMessage(player, EntityType::PLAYER, position);
-    // broadcastMessageToClients(createEntityMessage);
+    broadcastNames();
 
     std::cout << "handleClientConnected done" << std::endl;
 }
@@ -333,6 +335,17 @@ void GameServer::handleMessageReceived(const ENetEvent& event)
         startGame();
       }
       break;
+    }
+    case game::CLIENT_NAME_MESSAGE:
+    {
+      const game::ClientNameMessage clientNameMessage = message.client_name_message();
+      std::cout << "Received clientNameMessage: " << event.peer->incomingPeerID << ", "
+                << clientNameMessage.name() << std::endl;
+      Name name;
+      name.name = clientNameMessage.name();
+      registry.emplace<Name>(gameClients[event.peer->incomingPeerID].player, name);
+      gameClients[event.peer->incomingPeerID].name = name.name;
+      broadcastNames();
     }
     default:
     {
@@ -379,6 +392,16 @@ void GameServer::broadcastGameUpdates()
   broadcastFakeUpdates();
   broadcastHealthUpdates();
   broadcastCeilingUpdates();
+}
+
+void GameServer::broadcastNames()
+{
+  auto view = registry.view<const Name>();
+  view.each([&](entt::entity e, const Name& name) 
+  {
+      game::Message nameMessage = createNameMessage(e, name);
+      broadcastMessageToClients(nameMessage);
+  });
 }
 
 void GameServer::broadcastDynamicEntityUpdates()

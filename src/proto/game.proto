@@ -13,6 +13,8 @@ enum MessageType
   HEALTH_UPDATE_MESSAGE = 6;
   POSITION_UPDATE_MESSAGE = 7;
   DESTROY_ENTITY_MESSAGE = 8;
+  CLIENT_NAME_MESSAGE = 9;
+  NAME_UPDATE_MESSAGE = 10;
 }
 
 enum EntityType
@@ -91,6 +93,17 @@ message DestroyEntityMessage
   uint32 entity = 1;
 }
 
+message ClientNameMessage
+{
+  string name = 1;
+}
+
+message NameUpdateMessage
+{
+  uint32 entity = 1;
+  string name = 2;
+}
+
 message Message
 {
   MessageType message_type = 1;
@@ -105,5 +118,7 @@ message Message
     HealthUpdateMessage health_update_message = 8;
     PositionUpdateMessage position_update_message = 9;
     DestroyEntityMessage destroy_entity_message = 10;
+    ClientNameMessage client_name_message = 11;
+    NameUpdateMessage name_update_message = 12;
   }
 }

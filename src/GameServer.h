@@ -16,6 +16,7 @@ class GameServer : public ENetServer
     struct ClientInfo
     {
         entt::entity player;
+        std::string name;
         game::PlayerInputMessage playerInputState;
         bool ready;
     };
@@ -37,6 +38,7 @@ class GameServer : public ENetServer
     void broadcastFakeUpdates();
     void broadcastHealthUpdates();
     void broadcastCeilingUpdates();
+    void broadcastNames();
 
     void handleClientConnected(const ENetEvent& event) override;
     void handleMessageReceived(const ENetEvent& event) override;

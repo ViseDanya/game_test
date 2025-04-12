@@ -4,6 +4,7 @@
 #include "Components/Velocity.h"
 #include "Components/Adjacencies.h"
 #include "Components/Health.h"
+#include "Components/Name.h"
 
 game::Message createCreateEntityMessage(const entt::entity entity, const EntityType entityType, const glm::vec2& position)
 {
@@ -98,5 +99,16 @@ game::Message createDestroyEntityMessage(const entt::entity entity)
     game::Message message;
     message.set_message_type(game::MessageType::DESTROY_ENTITY_MESSAGE);
     message.mutable_destroy_entity_message()->CopyFrom(destroyEntityMessage);
+    return message;
+}
+
+game::Message createNameMessage(const entt::entity entity, const Name& name)
+{
+    game::NameUpdateMessage nameUpdateMessage;
+    nameUpdateMessage.set_entity(entt::to_integral(entity));
+    nameUpdateMessage.set_name(name.name);
+    game::Message message;
+    message.set_message_type(game::MessageType::NAME_UPDATE_MESSAGE);
+    message.mutable_name_update_message()->CopyFrom(nameUpdateMessage);
     return message;
 }
