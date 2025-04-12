@@ -119,19 +119,19 @@ std::pair<Direction, float> getCollisionDirectionAndOverlap(const Box& box1, con
     const float minimumOverlap = std::min({leftOverlap, rightOverlap, downOverlap, upOverlap});
     if(minimumOverlap == leftOverlap)
     {
-        return std::tuple(Direction::LEFT, minimumOverlap);
+        return std::pair(Direction::LEFT, minimumOverlap);
     }
     else if(minimumOverlap == rightOverlap)
     {
-        return std::tuple(Direction::RIGHT, minimumOverlap);
+        return std::pair(Direction::RIGHT, minimumOverlap);
     }
     else if(minimumOverlap == downOverlap)
     {
-        return std::tuple(Direction::DOWN, minimumOverlap);
+        return std::pair(Direction::DOWN, minimumOverlap);
     }
     else
     {
-        return std::tuple(Direction::UP, minimumOverlap);
+        return std::pair(Direction::UP, minimumOverlap);
     }
 }
 
