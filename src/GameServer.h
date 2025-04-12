@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Networking/ENetServer.h"
-#include "proto/game.pb.h"
+#include <proto/game.pb.h>
 #include "entt/entt.hpp"
 #include <unordered_map>
 #include <imgui.h>

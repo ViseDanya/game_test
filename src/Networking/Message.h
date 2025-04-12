@@ -1,4 +1,4 @@
-#include "proto/game.pb.h"
+#include <proto/game.pb.h>
 #include "Entity.h"
 #include <glm/vec2.hpp>
 

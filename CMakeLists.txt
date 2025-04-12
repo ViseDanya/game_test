@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.25)
 project(Game)
 set(CMAKE_CXX_STANDARD 14)
+message(STATUS "C++ compiler: ${CMAKE_CXX_COMPILER}")
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${Game_SOURCE_DIR}/cmake")
 

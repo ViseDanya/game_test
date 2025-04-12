@@ -110,7 +110,7 @@ struct CollisionInfo
 };
 
 // this function assumes the boxes are overlapping already
-std::tuple<Direction, float> getCollisionDirectionAndOverlap(const Box& box1, const Box& box2)
+std::pair<Direction, float> getCollisionDirectionAndOverlap(const Box& box1, const Box& box2)
 {
     const float leftOverlap = box2.right() - box1.left();
     const float rightOverlap = box1.right() - box2.left();
