@@ -154,8 +154,10 @@ void GameServer::run()
     registry.on_construct<TypeComponent>().connect<&GameServer::onEntityCreated>(*this);
     registry.on_destroy<entt::entity>().connect<&GameServer::onEntityDestroyed>(*this);
 
+    #ifndef HEADLESS
     TextureManager::loadAllTextures(sdlRenderer);
     Renderer renderer(sdlRenderer);
+    #endif
 
     bool quit = false;
   SDL_Event event;
