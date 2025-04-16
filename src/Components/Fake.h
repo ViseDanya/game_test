@@ -10,7 +10,7 @@ struct Fake
     };
     
     Uint64 collisionTime;
-    Uint64 timeUntilFlipMS = 500;
+    Uint64 timeUntilFlipMS = 100;
     Uint64 flipDuration = 1000;
     Fake::State state = IDLE;
 };

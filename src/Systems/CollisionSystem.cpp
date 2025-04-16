@@ -209,6 +209,21 @@ void resolveDynamicWithDynamicCollision(entt::registry& registry, CollisionInfo 
     // downVelocity.velocity.y = 0;
     }
 
+    if(collisionDirection == Direction::UP)
+    {
+        auto& v1 = registry.get<Velocity>(collisionInfo.e1);
+        auto& v2 = registry.get<Velocity>(collisionInfo.e2);
+        v2.velocity.y = v1.velocity.y;
+        v1.velocity.y = 0;
+    }
+    else if(collisionDirection == Direction::DOWN)
+    {
+        auto& v1 = registry.get<Velocity>(collisionInfo.e1);
+        auto& v2 = registry.get<Velocity>(collisionInfo.e2);
+        v1.velocity.y = v2.velocity.y;
+        v2.velocity.y = 0;
+    }
+
     adjacencies1.adjacencies[collisionDirection] = collisionInfo.e2;
     adjacencies2.adjacencies[collisionOppositeDirection] = collisionInfo.e1;
 }
