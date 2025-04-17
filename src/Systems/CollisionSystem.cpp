@@ -12,6 +12,7 @@
 #include "Components/HealthChanger.h"
 #include "Components/Ceiling.h"
 #include "Components/Type.h"
+#include "Components/PositionHistory.h"
 #include "Constants.h"
 #include <numeric>
 #include <iostream>
@@ -354,7 +355,6 @@ bool resolveCollision(V1 view1, V2 view2, std::function<void(entt::registry&, Co
     for(const entt::entity e1 : view1)
     {
         Box& box1 = registry.get<Box>(e1);
-        Velocity& velocity1 = registry.get<Velocity>(e1);
         Collider& collider1 = registry.get<Collider>(e1);
         for(const entt::entity e2 : view2)
         {
@@ -374,18 +374,23 @@ bool resolveCollision(V1 view1, V2 view2, std::function<void(entt::registry&, Co
                 collisionInfo.overlap = collisionDirectionAndOverlap.second;
                 // std::cout << "Collision overlap:" << collisionInfo.overlap << std::endl;
                 // std::cout << "Collision direction: " << collisionInfo.direction << std::endl;
-                if(collider2.isOneWay && (collisionInfo.direction != Direction::DOWN || velocity1.velocity.y >= 0))
+                if(collider2.isOneWay)
                 {
-                    continue;
-                }
-                else
-                {
-                    collisionManager.registerCollision(e1, e2);
-                    if(!collisionManager.shouldIgnoreCollision(e1, e2))
+                    PositionHistory& positionHistory1 = registry.get<PositionHistory>(e1);
+                    Box collider1InWorldSpaceInPrevFrame = 
+                        Box(collider1.box.center + positionHistory1.prevPosition, collider1.box.size);
+                    if(collisionInfo.direction != Direction::DOWN || 
+                        collider1InWorldSpaceInPrevFrame.bottom() < collider2InWorldSpace.top())
                     {
-                        collisionDetected = true;
-                        collisionResolutionFunction(registry, collisionInfo);
+                        continue;
                     }
+                }
+
+                collisionManager.registerCollision(e1, e2);
+                if(!collisionManager.shouldIgnoreCollision(e1, e2))
+                {
+                    collisionDetected = true;
+                    collisionResolutionFunction(registry, collisionInfo);
                 }
             }
         }

@@ -10,8 +10,10 @@ public:
     ~ENetServer();
     
     void startServer();
-    void sendMessageToClient(enet_uint16 clientID, const char* data, const int length);
-    void broadcastMessageToClients(const char* data, const int length);
+    void sendReliableMessage(enet_uint16 clientID, const char* data, const int length);
+    void sendUnreliableMessage(enet_uint16 clientID, const char* data, const int length);
+    void broadcastReliableMessage(const char* data, const int length);
+    void broadcastUnreliableMessage(const char* data, const int length);
     void processEvents();
 
 private:

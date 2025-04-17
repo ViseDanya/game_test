@@ -1,11 +1,12 @@
 #include "ENetClient.h"
+#include "ENetCommon.h"
 #include <iostream>
 
 ENetClient::ENetClient() : client(nullptr)
 {
     client = enet_host_create (NULL /* create a client host */,
                 1 /* only allow 1 outgoing connection */,
-                2 /* allow up 2 channels to be used, 0 and 1 */,
+                CHANNEL_COUNT /* allow up 2 channels to be used, 0 and 1 */,
                 0 /* assume any amount of incoming bandwidth */,
                 0 /* assume any amount of outgoing bandwidth */);
     
@@ -31,7 +32,7 @@ void ENetClient::connectToServer(const char* address)
     enetAddress.port = 1234;
     
     /* Initiate the connection, allocating the two channels 0 and 1. */
-    server = enet_host_connect (client, &enetAddress, 2, 0);    
+    server = enet_host_connect (client, &enetAddress, CHANNEL_COUNT, 0);    
     
     if (server == nullptr)
     {
@@ -89,17 +90,16 @@ void ENetClient::processEvents()
     }
 }
 
-
-void ENetClient::sendMessageToServer(const char* data, const int length)
+void ENetClient::sendReliableMessage(const char* data, const int length)
 {
-    /* Create a reliable packet of size 7 containing "packet\0" */
-    ENetPacket* enetPacket = enet_packet_create ((const void*) data, length, ENET_PACKET_FLAG_RELIABLE);
-    
-    /* Send the packet to the peer over channel id 0. */
-    /* One could also broadcast the packet by         */
-    /* enet_host_broadcast (host, 0, packet);         */
-    enet_peer_send (server, 0, enetPacket);
+    ENetPacket* packet = enet_packet_create ((const void*) data, length, ENET_PACKET_FLAG_RELIABLE);
+    enet_peer_send (server, CHANNEL_RELIABLE, packet);
+    enet_host_flush(client);
+}
 
-    /* One could just use enet_host_service() instead. */
+void ENetClient::sendUnreliableMessage(const char* data, const int length)
+{
+    ENetPacket* packet = enet_packet_create ((const void*) data, length, 0);
+    enet_peer_send (server, CHANNEL_UNRELIABLE, packet);
     enet_host_flush(client);
 }

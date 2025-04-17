@@ -1,4 +1,5 @@
 #include "ENetServer.h"
+#include "ENetCommon.h"
 #include <enet/enet.h>
 #include <iostream>
 
@@ -79,19 +80,36 @@ void ENetServer::processEvents()
     }
 }
 
-void ENetServer::broadcastMessageToClients(const char* data, const int length)
+void ENetServer::broadcastReliableMessage(const char* data, const int length)
 {
     ENetPacket* packet = enet_packet_create ((const void*) data, length, ENET_PACKET_FLAG_RELIABLE);
-    enet_host_broadcast (server, 0, packet);
+    enet_host_broadcast (server, CHANNEL_RELIABLE, packet);
     enet_host_flush(server);
 }
 
-void ENetServer::sendMessageToClient(enet_uint16 clientID, const char* data, const int length)
+void ENetServer::broadcastUnreliableMessage(const char* data, const int length)
+{
+    ENetPacket* packet = enet_packet_create ((const void*) data, length, 0);
+    enet_host_broadcast (server, CHANNEL_UNRELIABLE, packet);
+    enet_host_flush(server);
+}
+
+void ENetServer::sendReliableMessage(enet_uint16 clientID, const char* data, const int length)
 {
     if(clients.find(clientID) != clients.end())
     {
         ENetPacket* packet = enet_packet_create ((const void*) data, length, ENET_PACKET_FLAG_RELIABLE);
-        enet_peer_send (clients[clientID], 0, packet);
+        enet_peer_send (clients[clientID], CHANNEL_RELIABLE, packet);
+        enet_host_flush(server);
+    }
+}
+
+void ENetServer::sendUnreliableMessage(enet_uint16 clientID, const char* data, const int length)
+{
+    if(clients.find(clientID) != clients.end())
+    {
+        ENetPacket* packet = enet_packet_create ((const void*) data, length, 0);
+        enet_peer_send (clients[clientID], CHANNEL_UNRELIABLE, packet);
         enet_host_flush(server);
     }
 }

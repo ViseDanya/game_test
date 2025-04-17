@@ -109,14 +109,14 @@ void GameServer::onEntityCreated(entt::entity entity)
   EntityType type = registry.get<TypeComponent>(entity).type;
   Box& box = registry.get<Box>(entity);
   game::Message createEntityMessage = createCreateEntityMessage(entity, type, box.center);
-  broadcastMessageToClients(createEntityMessage);
+  broadcastReliableMessage(createEntityMessage);
 }
 
 void GameServer::onEntityDestroyed(entt::entity entity)
 {
   std::cout << "onEntityDesstroyed" << std::endl;
   game::Message destroyEntityMessage = createDestroyEntityMessage(entity);
-  broadcastMessageToClients(destroyEntityMessage);
+  broadcastReliableMessage(destroyEntityMessage);
   std::cout << "entitydddestroyed sent" << std::endl;
 }
 
@@ -212,6 +212,7 @@ void GameServer::run()
       spawnWalls();
     }
     
+    updatePositionHistory(registry);
     resetVelocity(registry, gravityEnabled);
 
     processEvents();
@@ -289,7 +290,7 @@ void GameServer::handleClientConnected(const ENetEvent& event)
       entt::entity player = pair.second.player;
       const Box& box = registry.get<Box>(player);
       game::Message createEntityMessage = createCreateEntityMessage(player, EntityType::PLAYER, box.center);
-      sendMessageToClient(event.peer->incomingPeerID, createEntityMessage);
+      sendReliableMessage(event.peer->incomingPeerID, createEntityMessage);
     }
 
     glm::vec2 position = glm::vec2(WINDOW_WIDTH/2, WINDOW_HEIGHT/2);
@@ -402,7 +403,7 @@ void GameServer::broadcastNames()
   view.each([&](entt::entity e, const Name& name) 
   {
       game::Message nameMessage = createNameMessage(e, name);
-      broadcastMessageToClients(nameMessage);
+      broadcastReliableMessage(nameMessage);
   });
 }
 
@@ -414,7 +415,7 @@ void GameServer::broadcastDynamicEntityUpdates()
     if(registry.valid(player))
     {
       game::Message playerUpdateMessage = createDynamicEntityUpdateMessage(registry, player);
-      broadcastMessageToClients(playerUpdateMessage);
+      broadcastUnreliableMessage(playerUpdateMessage);
     }
   }
 }
@@ -422,7 +423,7 @@ void GameServer::broadcastDynamicEntityUpdates()
 void GameServer::broadcastCameraUpdates()
 {
   game::Message cameraUpdateMessage = createCameraUpdateMessage(camera);
-  broadcastMessageToClients(cameraUpdateMessage);
+  broadcastUnreliableMessage(cameraUpdateMessage);
 }
 
 void GameServer::broadcastTrampolineUpdates()
@@ -433,7 +434,7 @@ void GameServer::broadcastTrampolineUpdates()
     if(trampoline.state == Trampoline::State::TRIGGERED)
     {
       game::Message playAnimationMessaage = createPlayAnimationMessage(e);
-      broadcastMessageToClients(playAnimationMessaage);
+      broadcastUnreliableMessage(playAnimationMessaage);
     }
   });
 }
@@ -446,7 +447,7 @@ void GameServer::broadcastFakeUpdates()
     if(fake.state == Fake::State::FLIP)
     {
       game::Message playAnimationMessaage = createPlayAnimationMessage(e);
-      broadcastMessageToClients(playAnimationMessaage);
+      broadcastUnreliableMessage(playAnimationMessaage);
     }
   });
 }
@@ -457,7 +458,7 @@ void GameServer::broadcastHealthUpdates()
   view.each([&](entt::entity e, Health& health) 
   {
     game::Message healthUpdateMessage = createHealthUpdateMessage(e, health);
-    broadcastMessageToClients(healthUpdateMessage);
+    broadcastUnreliableMessage(healthUpdateMessage);
   });
 }
 
@@ -467,22 +468,36 @@ void GameServer::broadcastCeilingUpdates()
   view.each([&](entt::entity e, const Box& box) 
   {
     game::Message positionUpdateMessage = createPositionUpdateMessage(e, box.center);
-    broadcastMessageToClients(positionUpdateMessage);
+    broadcastUnreliableMessage(positionUpdateMessage);
   });
 }
 
-void GameServer::sendMessageToClient(enet_uint16 clientID, const game::Message& message)
+void GameServer::sendReliableMessage(enet_uint16 clientID, const game::Message& message)
 {
   std::string serializedMessage;
   message.SerializeToString(&serializedMessage);
-  ENetServer::sendMessageToClient(clientID, serializedMessage.c_str(), serializedMessage.length());
+  ENetServer::sendReliableMessage(clientID, serializedMessage.c_str(), serializedMessage.length());
 }
 
-void GameServer::broadcastMessageToClients(const game::Message& message)
+void GameServer::sendUnreliableMessage(enet_uint16 clientID, const game::Message& message)
 {
   std::string serializedMessage;
   message.SerializeToString(&serializedMessage);
-  ENetServer::broadcastMessageToClients(serializedMessage.c_str(), serializedMessage.length());
+  ENetServer::sendUnreliableMessage(clientID, serializedMessage.c_str(), serializedMessage.length());
+}
+
+void GameServer::broadcastReliableMessage(const game::Message& message)
+{
+  std::string serializedMessage;
+  message.SerializeToString(&serializedMessage);
+  ENetServer::broadcastReliableMessage(serializedMessage.c_str(), serializedMessage.length());
+}
+
+void GameServer::broadcastUnreliableMessage(const game::Message& message)
+{
+  std::string serializedMessage;
+  message.SerializeToString(&serializedMessage);
+  ENetServer::broadcastUnreliableMessage(serializedMessage.c_str(), serializedMessage.length());
 }
 
 bool GameServer::areAllPlayersReady()

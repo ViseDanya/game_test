@@ -2,13 +2,23 @@
 #include "Components/Box.h"
 #include "Components/Velocity.h"
 #include "Components/Adjacencies.h"
+#include "Components/PositionHistory.h"
 #include "Constants.h"
 #include <entt/entt.hpp>
+
+void updatePositionHistory(entt::registry& registry)
+{
+  auto view = registry.view<const Box, PositionHistory>();
+  view.each([&](const Box& box, PositionHistory& positionHistory) 
+  {
+    positionHistory.prevPosition = box.center;
+  });
+}
 
 void resetVelocity(entt::registry& registry, const bool gravityEnabled)
 {
   auto view = registry.view<Velocity, const Adjacencies>();
-  view.each([&](entt::entity e, Velocity& velocity, const Adjacencies& adjacencies) 
+  view.each([&](Velocity& velocity, const Adjacencies& adjacencies) 
   {
     velocity.velocity.x = 0;
     if(adjacencies.isOnFloor || !gravityEnabled)

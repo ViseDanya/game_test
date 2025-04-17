@@ -14,6 +14,7 @@
 #include "Components/Health.h"
 #include "Components/HealthChanger.h"
 #include "Components/Ceiling.h"
+#include "Components/PositionHistory.h"
 #include "TextureManager.h"
 #include <entt/entt.hpp>
 
@@ -56,6 +57,7 @@ entt::entity createPlayerEntity(entt::registry& registry, const glm::vec2& posit
     registry.emplace<Animation>(playerEntity, Animation::createPlayerIdleAnimation());
     registry.emplace<Animator>(playerEntity, Animator::createPlayerAnimtor());
     registry.emplace<Health>(playerEntity, 12);
+    registry.emplace<PositionHistory>(playerEntity, position);
     registry.emplace<TypeComponent>(playerEntity, EntityType::PLAYER);
     return playerEntity;
 }

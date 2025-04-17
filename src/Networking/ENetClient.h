@@ -9,7 +9,8 @@ public:
     ~ENetClient();
     
     void connectToServer(const char* address);
-    void sendMessageToServer(const char* data, const int length);
+    void sendReliableMessage(const char* data, const int length);
+    void sendUnreliableMessage(const char* data, const int length);
     void processEvents();
 private:
     ENetHost* client;

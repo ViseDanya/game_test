@@ -162,7 +162,8 @@ void LocalGame::run()
       {
         spawnWalls();
       }
-        
+      
+      updatePositionHistory(registry);
       resetVelocity(registry, gravityEnabled);
       applyInputToVelocity(registry, keystate, gravityEnabled);
       resetAdjacencies(registry);

@@ -33,7 +33,7 @@ void GameClient::sendReady()
   message.mutable_client_ready_message()->CopyFrom(clientReadyMessage);
   std::string serializedMessage;
   message.SerializeToString(&serializedMessage);
-  sendMessageToServer(serializedMessage.c_str(), serializedMessage.length());
+  sendReliableMessage(serializedMessage.c_str(), serializedMessage.length());
 }
 
 void GameClient::showUI()
@@ -147,7 +147,7 @@ void GameClient::processAndSendInput(const bool* keystate)
     message.mutable_player_input_message()->CopyFrom(playerInputMessage);
     std::string serializedMessage;
     message.SerializeToString(&serializedMessage);
-    sendMessageToServer(serializedMessage.c_str(), serializedMessage.length());
+    sendUnreliableMessage(serializedMessage.c_str(), serializedMessage.length());
 }
 
 void GameClient::run()
@@ -224,7 +224,7 @@ void GameClient::handleServerConnected(const ENetEvent& event)
     message.mutable_client_name_message()->CopyFrom(clientNameMessage);
     std::string serializedMessage;
     message.SerializeToString(&serializedMessage);
-    sendMessageToServer(serializedMessage.c_str(), serializedMessage.length());
+    sendReliableMessage(serializedMessage.c_str(), serializedMessage.length());
 }
 
 void GameClient::handleServerDisconnected(const ENetEvent& event)

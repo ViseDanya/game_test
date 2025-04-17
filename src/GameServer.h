@@ -44,8 +44,10 @@ class GameServer : public ENetServer
     void handleMessageReceived(const ENetEvent& event) override;
     void handleClientDisconnected(const ENetEvent& event) override;
 
-    void sendMessageToClient(enet_uint16 clientID, const game::Message& message);
-    void broadcastMessageToClients(const game::Message& message);
+    void sendReliableMessage(enet_uint16 clientID, const game::Message& message);
+    void sendUnreliableMessage(enet_uint16 clientID, const game::Message& message);
+    void broadcastReliableMessage(const game::Message& message);
+    void broadcastUnreliableMessage(const game::Message& message);
 
     void resetCamera();
     void showImGui();
