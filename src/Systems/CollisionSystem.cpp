@@ -286,7 +286,7 @@ void resolveDynamicWithCeilingCollision(entt::registry& registry, CollisionInfo 
 
 void resolveDynamicWithStaticCollision(entt::registry& registry, CollisionInfo collisionInfo)
 {
-    std::cout << "resolve dynamic with static lol " << entt::to_integral(collisionInfo.e2) << std::endl;
+    // std::cout << "resolve dynamic with static lol " << entt::to_integral(collisionInfo.e2) << std::endl;
 
     auto [box, velocity, adjacencies] = registry.get<Box, Velocity, Adjacencies>(collisionInfo.e1);
     const Direction collisionDirection = collisionInfo.direction;
@@ -308,7 +308,7 @@ void resolveDynamicWithStaticCollision(entt::registry& registry, CollisionInfo c
         }
     }
     adjacencies.adjacencies[collisionDirection] = collisionInfo.e2;
-    std::cout << "resolve dynamic with static " << entt::to_integral(collisionInfo.e2) << std::endl;
+    // std::cout << "resolve dynamic with static " << entt::to_integral(collisionInfo.e2) << std::endl;
 }
 
 void resolvePhysicsCollision(entt::registry& registry, CollisionInfo collisionInfo)
