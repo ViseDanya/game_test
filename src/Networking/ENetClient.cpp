@@ -22,7 +22,7 @@ ENetClient::~ENetClient()
     enet_host_destroy(client);
 }
 
-void ENetClient::connectToServer(const char* address)
+bool ENetClient::connectToServer(const char* address)
 {
     ENetAddress enetAddress;
     ENetEvent enetEvent;
@@ -46,6 +46,7 @@ void ENetClient::connectToServer(const char* address)
     {
         handleServerConnected(enetEvent);
         std::cout << "Connection to some.server.net:1234 succeeded." << std::endl;
+        return true;
     }
     else
     {
@@ -54,6 +55,7 @@ void ENetClient::connectToServer(const char* address)
         /* had run out without any significant event.            */
         enet_peer_reset(server);
         std::cerr << "Connection to some.server.net:1234 failed." << std::endl;
+        return false;
     }
 }
 

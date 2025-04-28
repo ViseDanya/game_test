@@ -1,9 +1,12 @@
 #include "RenderSystem.h"
+
+#include <Camera.h>
+#include <Components/Collider.h>
 #include <Constants.h>
 #include <Box.h>
 #include <Sprite.h>
-#include <Renderer.h>
-#include "Components/Collider.h"
+#include <SDLRenderUtils.h>
+
 #include <entt/entt.hpp>
 #include <glm/vec2.hpp>
 
@@ -25,31 +28,31 @@ SDL_FRect getDestinationRect(const Box& box, const Camera& camera)
   return destRect;
 }
 
-void renderColoredEntities(entt::registry& registry, Renderer& renderer, const Camera& camera)
+void renderColoredEntities(entt::registry& registry, SDL_Renderer* renderer, const Camera& camera)
 {
     auto view = registry.view<const Box, const SDL_Color>();
     view.each([&](const Box& box, const SDL_Color& color) 
         {
-          renderer.renderColoredFilledRectangle(color, getDestinationRect(box, camera));
+          renderColoredFilledRectangle(renderer, color, getDestinationRect(box, camera));
         });
 };
 
-void renderSprites(entt::registry& registry, Renderer& renderer, const Camera& camera)
+void renderSprites(entt::registry& registry, SDL_Renderer* renderer, const Camera& camera)
 {
     auto view = registry.view<const Box, const Sprite>();
     view.each([&](const Box& box, const Sprite& sprite) 
         {
-          renderer.renderTexture(sprite.texture, sprite.sourceRect, getDestinationRect(box, camera));
+          renderTexture(renderer, sprite.texture, sprite.sourceRect, getDestinationRect(box, camera));
         });
 };
 
-void renderDebugColliders(entt::registry& registry, Renderer& renderer, const Camera& camera)
+void renderDebugColliders(entt::registry& registry, SDL_Renderer* renderer, const Camera& camera)
 {
     auto view = registry.view<const Box, const Collider>();
     view.each([&](const Box& box, const Collider& collider) 
         {
           const Box colliderInWorldSpace = Box(collider.box.center + box.center, collider.box.size);
           const SDL_Color color = collider.isEnabled ? SDL_Color{255,0,0,255} : SDL_Color{0,255,0,255};
-          renderer.renderColoredRectangle(color, getDestinationRect(colliderInWorldSpace, camera));
+          renderColoredRectangle(renderer, color, getDestinationRect(colliderInWorldSpace, camera));
         });
 };

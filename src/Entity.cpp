@@ -15,7 +15,7 @@
 #include "Components/HealthChanger.h"
 #include "Components/Ceiling.h"
 #include "Components/PositionHistory.h"
-#include "TextureManager.h"
+#include "SDLTextureManager.h"
 #include <entt/entt.hpp>
 
 entt::entity createEntity(const EntityType entityType, entt::registry& registry, const glm::vec2& position)
@@ -50,7 +50,7 @@ entt::entity createPlayerEntity(entt::registry& registry, const glm::vec2& posit
     const Box& box = registry.emplace<Box>(playerEntity, 
       Box(position, glm::vec2(PLAYER_WIDTH/2, PLAYER_WIDTH/2)));
     registry.emplace<Collider>(playerEntity, Box(glm::ZERO, box.size));
-    registry.emplace<Sprite>(playerEntity, TextureManager::playerTexture);
+    registry.emplace<Sprite>(playerEntity, SDLTextureManager::playerTexture);
     registry.emplace<Velocity>(playerEntity);
     registry.emplace<Mass>(playerEntity, 1.);
     registry.emplace<Adjacencies>(playerEntity);
@@ -101,7 +101,7 @@ entt::entity createNormalEntity(entt::registry& registry, const glm::vec2& posit
     const Box& box = registry.emplace<Box>(normalEntity, 
       Box(position, glm::vec2(PLATFORM_WIDTH/2, PLATFORM_HEIGHT/2)));
     registry.emplace<Collider>(normalEntity, Box(glm::ZERO, box.size), true, true);
-    registry.emplace<Sprite>(normalEntity, TextureManager::normalTexture, SDL_FRect{0,0,PLATFORM_WIDTH,PLATFORM_HEIGHT});
+    registry.emplace<Sprite>(normalEntity, SDLTextureManager::normalTexture, SDL_FRect{0,0,PLATFORM_WIDTH,PLATFORM_HEIGHT});
     registry.emplace<TypeComponent>(normalEntity, EntityType::NORMAL_PLATFORM);
     registry.emplace<HealthChanger>(normalEntity, 1);
     return normalEntity;
@@ -122,7 +122,7 @@ entt::entity createConveyorEntity(entt::registry& registry, const glm::vec2& pos
 entt::entity createConveyorRightEntity(entt::registry& registry, const glm::vec2& position)
 {
     const entt::entity conveyorEntity = createConveyorEntity(registry, position);
-    registry.emplace<Sprite>(conveyorEntity, TextureManager::conveyorRightTexture, SDL_FRect{0,0,PLATFORM_WIDTH,PLATFORM_HEIGHT});
+    registry.emplace<Sprite>(conveyorEntity, SDLTextureManager::conveyorRightTexture, SDL_FRect{0,0,PLATFORM_WIDTH,PLATFORM_HEIGHT});
     Conveyor& conveyor = registry.get<Conveyor>(conveyorEntity);
     conveyor.speed = PLAYER_SPEED/2.f;
     registry.emplace<TypeComponent>(conveyorEntity, EntityType::CONVEYOR_RIGHT);
@@ -132,7 +132,7 @@ entt::entity createConveyorRightEntity(entt::registry& registry, const glm::vec2
 entt::entity createConveyorLeftEntity(entt::registry& registry, const glm::vec2& position)
 {
     const entt::entity conveyorEntity = createConveyorEntity(registry, position);
-    registry.emplace<Sprite>(conveyorEntity, TextureManager::conveyorLeftTexture, SDL_FRect{0,0,PLATFORM_WIDTH,PLATFORM_HEIGHT});
+    registry.emplace<Sprite>(conveyorEntity, SDLTextureManager::conveyorLeftTexture, SDL_FRect{0,0,PLATFORM_WIDTH,PLATFORM_HEIGHT});
     Conveyor& conveyor = registry.get<Conveyor>(conveyorEntity);
     conveyor.speed = -PLAYER_SPEED/2.f;
     registry.emplace<TypeComponent>(conveyorEntity, EntityType::CONVEYOR_LEFT);
@@ -145,7 +145,7 @@ entt::entity createTrampolineEntity(entt::registry& registry, const glm::vec2& p
     const Box& box = registry.emplace<Box>(trampoline, position, 
       glm::vec2(PLATFORM_WIDTH/2, TRAMPOLINE_HEIGHT/2));
     registry.emplace<Collider>(trampoline, Box(glm::ZERO, box.size), true, true);
-    registry.emplace<Sprite>(trampoline, TextureManager::trampolineTexture, SDL_FRect{0,0,PLATFORM_WIDTH,TRAMPOLINE_HEIGHT});
+    registry.emplace<Sprite>(trampoline, SDLTextureManager::trampolineTexture, SDL_FRect{0,0,PLATFORM_WIDTH,TRAMPOLINE_HEIGHT});
     registry.emplace<Trampoline>(trampoline);
     registry.emplace<Animation>(trampoline, Animation::createTrampolineAnimation());
     registry.emplace<TypeComponent>(trampoline, EntityType::TRAMPOLINE);
@@ -159,7 +159,7 @@ entt::entity createWallEntity(entt::registry& registry, const glm::vec2& positio
     const Box& box = registry.emplace<Box>(wall, position, 
       glm::vec2(WALL_WIDTH/2, WINDOW_HEIGHT/2));
     registry.emplace<Collider>(wall, Box(glm::ZERO, box.size));
-    registry.emplace<Sprite>(wall, TextureManager::wallTexture,SDL_FRect{0,0,WALL_WIDTH,WALL_HEIGHT});
+    registry.emplace<Sprite>(wall, SDLTextureManager::wallTexture,SDL_FRect{0,0,WALL_WIDTH,WALL_HEIGHT});
     registry.emplace<TypeComponent>(wall, EntityType::WALL);
     return wall;
 }
@@ -169,7 +169,7 @@ entt::entity createSpikesEntity(entt::registry& registry, const glm::vec2& posit
     const entt::entity spikes = registry.create();
     registry.emplace<Box>(spikes, Box(position, glm::vec2(PLATFORM_WIDTH/2, SPIKES_HEIGHT/2)));
     registry.emplace<Collider>(spikes, Box(glm::vec2(0,-SPIKES_HEIGHT/4), glm::vec2(PLATFORM_WIDTH/2,7)), true, true);
-    registry.emplace<Sprite>(spikes, TextureManager::spikesTexture, SDL_FRect{0,0,PLATFORM_WIDTH,SPIKES_HEIGHT});
+    registry.emplace<Sprite>(spikes, SDLTextureManager::spikesTexture, SDL_FRect{0,0,PLATFORM_WIDTH,SPIKES_HEIGHT});
     registry.emplace<TypeComponent>(spikes, EntityType::SPIKES);
     registry.emplace<HealthChanger>(spikes, -5);
     return spikes;
@@ -181,7 +181,7 @@ entt::entity createFakeEntity(entt::registry& registry, const glm::vec2& positio
     const Box& box = registry.emplace<Box>(fakeEntity, 
       Box(position, glm::vec2(PLATFORM_WIDTH/2, FAKE_HEIGHT/2)));
     registry.emplace<Collider>(fakeEntity, Box(glm::ZERO, glm::vec2(PLATFORM_WIDTH/2, PLATFORM_HEIGHT/2)), true, true);
-    registry.emplace<Sprite>(fakeEntity, TextureManager::fakeTexture, SDL_FRect{0,0,PLATFORM_WIDTH,FAKE_HEIGHT});
+    registry.emplace<Sprite>(fakeEntity, SDLTextureManager::fakeTexture, SDL_FRect{0,0,PLATFORM_WIDTH,FAKE_HEIGHT});
     registry.emplace<Animation>(fakeEntity, Animation::createFakeAnimation());
     registry.emplace<Fake>(fakeEntity);
     registry.emplace<TypeComponent>(fakeEntity, EntityType::FAKE_PLATFORM);
@@ -195,7 +195,7 @@ entt::entity createCeilingEntity(entt::registry& registry, const glm::vec2& posi
     const Box& box = registry.emplace<Box>(ceilingEntity, 
       Box(position, glm::vec2(CEILING_WIDTH/2, PLATFORM_HEIGHT/2)));
     registry.emplace<Collider>(ceilingEntity, Box(glm::vec2(0,PLATFORM_HEIGHT), glm::vec2(CEILING_WIDTH/2, PLATFORM_HEIGHT/2)), true, false);
-    registry.emplace<Sprite>(ceilingEntity, TextureManager::ceilingTexture, SDL_FRect{0,0,CEILING_WIDTH,PLATFORM_HEIGHT});
+    registry.emplace<Sprite>(ceilingEntity, SDLTextureManager::ceilingTexture, SDL_FRect{0,0,CEILING_WIDTH,PLATFORM_HEIGHT});
     registry.emplace<TypeComponent>(ceilingEntity, EntityType::CEILING);
     registry.emplace<HealthChanger>(ceilingEntity, -5);
     registry.emplace<Ceiling>(ceilingEntity);

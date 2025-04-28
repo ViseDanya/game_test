@@ -1,10 +1,9 @@
 #include "MainMenuScreen.h"
 #include "Screen/LocalGameScreen.h"
+#include "Screen/ClientConnectToServerScreen.h"
 #include "SDLApp.h"
 
 #include <imgui.h>
-#include <imgui_impl_sdl3.h>
-#include <imgui_impl_sdlrenderer3.h>
 
 #include <iostream>
 
@@ -25,6 +24,8 @@ void MainMenuScreen::render(SDL_Renderer* renderer)
 
     if(ImGui::Button("Online Multiplayer"))
     {
+        SDLApp& app = SDLApp::getInstance();
+        app.changeScreen(new ClientConnectToServerScreen());
     }
 
     if(ImGui::Button("Host Server"))

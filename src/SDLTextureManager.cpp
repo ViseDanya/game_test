@@ -1,4 +1,4 @@
-#include "TextureManager.h"
+#include "SDLTextureManager.h"
 #include "SDL3_image/SDL_image.h"
 
 #include <string>
@@ -13,15 +13,15 @@ constexpr char SPIKES_TEXTURE_PATH[] =  "assets/spikes.png";
 constexpr char FAKE_TEXTURE_PATH[] =  "assets/fake.png";
 constexpr char CEILING_TEXTURE_PATH[] = "assets/ceiling.png";
 
-SDL_Texture* TextureManager::normalTexture;
-SDL_Texture* TextureManager::conveyorLeftTexture;
-SDL_Texture* TextureManager::conveyorRightTexture;
-SDL_Texture* TextureManager::playerTexture;
-SDL_Texture* TextureManager::wallTexture;
-SDL_Texture* TextureManager::trampolineTexture;
-SDL_Texture* TextureManager::spikesTexture;
-SDL_Texture* TextureManager::fakeTexture;
-SDL_Texture* TextureManager::ceilingTexture;
+SDL_Texture* SDLTextureManager::normalTexture;
+SDL_Texture* SDLTextureManager::conveyorLeftTexture;
+SDL_Texture* SDLTextureManager::conveyorRightTexture;
+SDL_Texture* SDLTextureManager::playerTexture;
+SDL_Texture* SDLTextureManager::wallTexture;
+SDL_Texture* SDLTextureManager::trampolineTexture;
+SDL_Texture* SDLTextureManager::spikesTexture;
+SDL_Texture* SDLTextureManager::fakeTexture;
+SDL_Texture* SDLTextureManager::ceilingTexture;
 
 std::string getFullTexturePath(const char* path)
 {
@@ -31,7 +31,7 @@ std::string getFullTexturePath(const char* path)
 	return fullPath;
 }
 
-void TextureManager::loadAllTextures(SDL_Renderer* renderer)
+void SDLTextureManager::loadAllTextures(SDL_Renderer* renderer)
 {
 	normalTexture = loadTexture(getFullTexturePath(NORMAL_PLATFORM_TEXTURE_PATH).c_str(), renderer);
 	conveyorLeftTexture = loadTexture(getFullTexturePath(CONVEYOR_LEFT_TEXTURE_PATH).c_str(), renderer);
@@ -44,7 +44,7 @@ void TextureManager::loadAllTextures(SDL_Renderer* renderer)
 	ceilingTexture = loadTexture(getFullTexturePath(CEILING_TEXTURE_PATH).c_str(), renderer);
 }
 
-SDL_Texture* TextureManager::loadTexture(const char* texturePath, SDL_Renderer* renderer)
+SDL_Texture* SDLTextureManager::loadTexture(const char* texturePath, SDL_Renderer* renderer)
 {
 	SDL_Texture *texture;
 	SDL_LogMessage(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO, "Loading %s", texturePath);

@@ -6,7 +6,7 @@
 #include "Systems/InputSystem.h"
 #include "Systems/PhysicsSystem.h"
 #include "Constants.h"
-#include "TextureManager.h"
+#include "SDLTextureManager.h"
 #include "Components/Box.h"
 #include "Components/Velocity.h"
 #include "Components/Adjacencies.h"
@@ -18,11 +18,10 @@
 #include <imgui_impl_sdl3.h>
 #include <imgui_impl_sdlrenderer3.h>
 
-extern SDL_Renderer* sdlRenderer;
-static Camera camera;
-static char serverAddress[256] = "localhost";
-static char name[256] = "Sexy Beast";
-static bool connected = false;
+GameClient::GameClient(std::string name)
+  : name(name)
+{
+}
 
 void GameClient::sendReady()
 {
@@ -36,187 +35,8 @@ void GameClient::sendReady()
   sendReliableMessage(serializedMessage.c_str(), serializedMessage.length());
 }
 
-void GameClient::showUI()
-{
-    ImGui_ImplSDLRenderer3_NewFrame();
-    ImGui_ImplSDL3_NewFrame();
-    ImGui::NewFrame();
-    ImGui::SetNextWindowPos({10, 10});
-    ImGui::Begin("Options", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
-    if (ImGui::Button("Ready"))
-    {
-      ready = !ready;
-      sendReady();
-    }
-    ImGui::SameLine();
-    ImGui::Text(ready ? "Ready" : "Not Ready");
-
-    auto view = registry.view<const Name, const Health>();
-    int i = 0;
-    view.each([&](const Name& name, const Health& health)
-    {
-      ImGui::PushID(i);
-      std::stringstream ss;
-      ss << name.name << ": " << health.health;
-      ImGui::Text("%s", ss.str().c_str());
-      ImGui::PopID();
-    } );
-
-
-    ImGui::End();
-
-    ImGui::Render();
-    ImGui_ImplSDLRenderer3_RenderDrawData(ImGui::GetDrawData(), sdlRenderer);
-}
-
-void GameClient::runConnectionLoop()
-{
-  bool quit = false;
-  SDL_Event event;
-  while (!quit && !connected)
-  {
-    while (SDL_PollEvent(&event) != 0)
-    {
-      ImGui_ImplSDL3_ProcessEvent(&event);
-      if (event.type == SDL_EVENT_QUIT)
-      {
-        quit = true;
-      }
-    }
-
-    showConnectUI();
-
-    SDL_RenderPresent(sdlRenderer);
-  }
-
-  if(connected)
-  {
-    runGameLoop();
-  }
-}
-
-void GameClient::showConnectUI()
-{
-    ImGui_ImplSDLRenderer3_NewFrame();
-    ImGui_ImplSDL3_NewFrame();
-    ImGui::NewFrame();
-    ImGui::SetNextWindowPos({10, 10});
-    ImGui::Begin("Options", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
-
-    ImGui::Text("Server Address");
-    ImGui::SameLine();
-    ImGui::InputText("##labelServer Address", serverAddress, IM_ARRAYSIZE(serverAddress));
-
-    ImGui::Text("Name");
-    ImGui::SameLine();
-    ImGui::InputText("##labelName", name, IM_ARRAYSIZE(name));
-
-    if (ImGui::Button("Connect"))
-    {
-      connectToServer(serverAddress);
-    }
-
-    ImGui::End();
-
-    ImGui::Render();
-    ImGui_ImplSDLRenderer3_RenderDrawData(ImGui::GetDrawData(), sdlRenderer);
-}
-
-void GameClient::processAndSendInput(const bool* keystate)
-{
-    game::PlayerInputMessage playerInputMessage;
-    if (keystate[SDL_SCANCODE_A])
-    {
-        playerInputMessage.set_left(true);
-    }
-    if (keystate[SDL_SCANCODE_D])
-    {
-        playerInputMessage.set_right(true);
-    }
-    if (keystate[SDL_SCANCODE_W])
-    {
-        playerInputMessage.set_up(true);
-    }
-    if (keystate[SDL_SCANCODE_S])
-    {
-        playerInputMessage.set_down(true);
-    }
-
-    game::Message message;
-    message.set_message_type(game::MessageType::PLAYER_INPUT_MESSAGE);
-    message.mutable_player_input_message()->CopyFrom(playerInputMessage);
-    std::string serializedMessage;
-    message.SerializeToString(&serializedMessage);
-    sendUnreliableMessage(serializedMessage.c_str(), serializedMessage.length());
-}
-
-void GameClient::run()
-{
-    // connectToServer("34.56.4.111");
-    // connectToServer("localhost");
-  runConnectionLoop();
-}
-
-void GameClient::runGameLoop()
-{
-  TextureManager::loadAllTextures(sdlRenderer);
-    Renderer renderer(sdlRenderer);
-
-    bool quit = false;
-  SDL_Event event;
-
-  float mouseX;
-  float mouseY;
-  camera.position = glm::vec2(WINDOW_WIDTH/2, WINDOW_HEIGHT/2);
-  camera.zoom = 1;
-
-  while (!quit)
-  {
-    Uint64 frameStartTime = SDL_GetTicks();
-    while (SDL_PollEvent(&event) != 0)
-    {
-      ImGui_ImplSDL3_ProcessEvent(&event);
-      if (event.type == SDL_EVENT_QUIT)
-      {
-        quit = true;
-      }
-    }
-
-    const bool *keystate = SDL_GetKeyboardState(nullptr);
-    processAndSendInput(keystate);
-
-    processEvents();
-
-    SDL_SetRenderDrawColor(sdlRenderer, 0, 0, 0, 255);
-    SDL_RenderClear(sdlRenderer);
-
-    updateAnimators(registry);
-    updateTrampolineAnimations(registry);
-    updateAnimations(registry);
-    renderColoredEntities(registry, renderer, camera);
-    renderSprites(registry, renderer, camera);
-
-    showUI();
-
-    // if(debugColliders)
-    // {
-    //   renderDebugColliders(registry, renderer, camera);
-    // }
-
-    SDL_RenderPresent(sdlRenderer);
-
-    Uint64 frameEndTime = SDL_GetTicks();
-    Uint64 elapsedTime = frameEndTime - frameStartTime;
-    if(elapsedTime < 1000/FPS)
-    {
-      SDL_Delay(1000/FPS - elapsedTime);
-    }
-  }
-}
-
 void GameClient::handleServerConnected(const ENetEvent& event)
 {
-    connected = true;
     game::ClientNameMessage clientNameMessage;
     clientNameMessage.set_name(name);
     game::Message message;

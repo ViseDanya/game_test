@@ -8,19 +8,13 @@
 
 class LocalGameScreen : public Screen
 {
-    public:
-    LocalGameScreen() = default;
-    ~LocalGameScreen() = default;
-
-    void run();
-
+public:
     virtual void handleEvents(const SDL_Event& event) override;
     virtual void update(const float dt) override;
     virtual void render(SDL_Renderer* renderer) override;
 
-    private:
+private:
     void resetCamera();
-    void showImGui();
     void spawnPlatform();
     void spawnWalls();
     void createGameScene();

@@ -35,14 +35,13 @@ file(GLOB IMGUI_SOURCES
 
 target_sources(main PRIVATE
     ${IMGUI_SOURCES}
-    "src/Renderer.cpp"
+    "src/SDLRenderUtils.cpp"
     "src/Networking/ENetClient.cpp"
     "src/Networking/ENetServer.cpp"
     "src/Networking/Message.cpp"
-    "src/GameServer.cpp"
+    # "src/GameServer.cpp"
     "src/GameClient.cpp"
-    "src/LocalGame.cpp"
-    "src/TextureManager.cpp"
+    # "src/LocalGame.cpp"
     "src/Constants.cpp"
     "src/Systems/AnimationSystem.cpp"
     "src/Systems/CollisionSystem.cpp"
@@ -54,7 +53,11 @@ target_sources(main PRIVATE
     "src/Direction.cpp"
     "src/Scene.cpp"
     "src/SDLApp.cpp"
+    "src/SDLRenderUtils.cpp"
+    "src/SDLTextureManager.cpp"
     "src/Screen/LocalGameScreen.cpp"
+    "src/Screen/ClientConnectToServerScreen.cpp"
+    "src/Screen/ClientGameScreen.cpp"
     "src/Screen/MainMenuScreen.cpp"
     "src/Screen/Screen.cpp"
     "src/main.cpp")

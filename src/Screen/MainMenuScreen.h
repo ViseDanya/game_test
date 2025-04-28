@@ -4,6 +4,6 @@
 
 class MainMenuScreen : public Screen
 {
-    public:
+public:
     virtual void render(SDL_Renderer* renderer) override;
 };

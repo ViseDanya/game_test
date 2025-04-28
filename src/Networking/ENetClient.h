@@ -8,7 +8,7 @@ public:
     ENetClient();
     ~ENetClient();
     
-    void connectToServer(const char* address);
+    bool connectToServer(const char* address);
     void sendReliableMessage(const char* data, const int length);
     void sendUnreliableMessage(const char* data, const int length);
     void processEvents();

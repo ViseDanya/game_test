@@ -3,7 +3,7 @@
 struct SDL_Texture;
 struct SDL_Renderer;
 
-struct TextureManager
+struct SDLTextureManager
 {
     static SDL_Texture* normalTexture;
     static SDL_Texture* conveyorLeftTexture;
