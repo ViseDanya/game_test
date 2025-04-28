@@ -32,8 +32,8 @@ void LocalGameScreen::handleEvents(const SDL_Event& event)
 
 void LocalGameScreen::update(const float dt)
 {  
-  float mouseX;
-  float mouseY;
+  static float mouseX;
+  static float mouseY;
 
   if(manualCamera)
       {

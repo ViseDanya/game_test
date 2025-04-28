@@ -5,6 +5,7 @@
 
 #include "SDLApp.h"
 #include "Screen/MainMenuScreen.h"
+#include "TextureManager.h"
 
 #include <imgui.h>
 #include <imgui_impl_sdl3.h>
@@ -98,6 +99,7 @@ int main(int argc, char *argv[])
 
   SDLApp& app = SDLApp::getInstance();
   app.init("Game", WINDOW_WIDTH, WINDOW_HEIGHT);
+  TextureManager::loadAllTextures(app.getRenderer());
   app.changeScreen(new MainMenuScreen());
   app.run();
   
