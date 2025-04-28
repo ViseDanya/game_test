@@ -3,10 +3,12 @@
 #include "LocalGame.h"
 #include "Constants.h"
 
+#include "SDLApp.h"
+#include "Screen/MainMenuScreen.h"
+
 #include <imgui.h>
 #include <imgui_impl_sdl3.h>
 #include <imgui_impl_sdlrenderer3.h>
-#include <SDL3/SDL.h>
 #include <entt/entt.hpp>
 #include <iostream>
 
@@ -50,10 +52,7 @@ void initializeSDL()
 
 void initializeImGui()
 {
-  IMGUI_CHECKVERSION();
   ImGui::CreateContext();
-  ImGuiIO& io = ImGui::GetIO();
-  io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
 
   ImGui_ImplSDL3_InitForSDLRenderer(window, sdlRenderer);
   ImGui_ImplSDLRenderer3_Init(sdlRenderer);
@@ -70,32 +69,37 @@ void cleanup()
 
 int main(int argc, char *argv[])
 {
-  #ifndef HEADLESS
-  initializeSDL();
-  initializeImGui();
-  #endif
+  // #ifndef HEADLESS
+  // initializeSDL();
+  // initializeImGui();
+  // #endif
 
   initializeEnet();
   
-  if(argc == 2)
-  {
-    std::string arg = argv[1];
-    if(arg == "server")
-    {
-      GameServer gameServer;
-      gameServer.run();
-    }
-    else if(arg == "client")
-    {
-      GameClient gameClient;
-      gameClient.run();
-    }
-  }
-  else
-  {
-    LocalGame localGame;
-    localGame.run();
-  }
+  // if(argc == 2)
+  // {
+  //   std::string arg = argv[1];
+  //   if(arg == "server")
+  //   {
+  //     GameServer gameServer;
+  //     gameServer.run();
+  //   }
+  //   else if(arg == "client")
+  //   {
+  //     GameClient gameClient;
+  //     gameClient.run();
+  //   }
+  // }
+  // else
+  // {
+  //   LocalGame localGame;
+  //   localGame.run();
+  // }
+
+  SDLApp& app = SDLApp::getInstance();
+  app.init("Game", WINDOW_WIDTH, WINDOW_HEIGHT);
+  app.changeScreen(new MainMenuScreen());
+  app.run();
   
   cleanup();
 }

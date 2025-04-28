@@ -19,6 +19,7 @@ target_include_directories(main PRIVATE
     "src/Components" 
     "src/Networking" 
     "src/proto"
+    "src/Screen"
     "src/Systems" 
     "src/imgui" 
     "src/imgui/backends"
@@ -52,6 +53,10 @@ target_sources(main PRIVATE
     "src/Entity.cpp"
     "src/Direction.cpp"
     "src/Scene.cpp"
+    "src/SDLApp.cpp"
+    "src/Screen/LocalGameScreen.cpp"
+    "src/Screen/MainMenuScreen.cpp"
+    "src/Screen/Screen.cpp"
     "src/main.cpp")
 
 set(PROTO_DIR "src/proto")
